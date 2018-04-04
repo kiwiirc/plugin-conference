@@ -1,8 +1,10 @@
 KiwiIRC - Jitsi Meet Plugin
+
 This is to announce the completion of the first draft of a new conferencing plugin for KiwiIRC.
 This plugin integrates the Jitsi Meet software into KiwiIRC. 
 
 Features -
+
 Icon & Jitsi Meet scripts load automatically @ 1st IRC JOIN event
 
 Jitsi Meet "rooms" are created dynamically, based on the state of KiwiIRC. For example, a click
@@ -17,3 +19,5 @@ This plugin does not require any modifications to the KiwiIRC codebase.
 All actions are dynamic and self-sufficient.
 
 ![alt text](https://github.com/kiwiirc/plugin-conference/raw/master/image1.png)
+
+
