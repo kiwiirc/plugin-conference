@@ -1,4 +1,5 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
+
   let jitsiDomain = "meet.jit.si" //domain of jitsi deployment
   let camsVisible = camClick = mediaViewerOpen = jitsiLoaded = api = false;
   let jitsiDiv = resizejitsiDiv = network = buffer = options = domain = false;
@@ -31,7 +32,6 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
   window.addEventListener("click", function(e){
     if(e.srcElement.className.indexOf("kiwi-messagelist-message-linkhandle") !== -1 ||
        e.srcElement.className.indexOf("u-button-secondary") !== -1){
-      //hideCams();
       kiwi.emit('mediaviewer.hide')
     }
   });
