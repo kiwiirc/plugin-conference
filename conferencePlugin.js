@@ -1,5 +1,5 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
-  let jitsiDomain = "cantelope.gq" //domain of jitsi deployment (possibly window.location.hostname);
+  let jitsiDomain = "meet.jit.si" //domain of jitsi deployment
   let camsVisible = camClick = mediaViewerOpen = jitsiLoaded = api = false;
   let jitsiDiv = resizejitsiDiv = network = buffer = options = domain = false;
   
@@ -84,7 +84,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
             interfaceConfigOverwrite: {TOOLBAR_BUTTONS: [
             'microphone', 'camera', 'desktop', 'fullscreen', 'fodeviceselection', 'hangup',
             'profile', 'contacts', 'info', 'recording', 'etherpad',
-            'sharedvideo', 'settings', 'videoquality', 'filmstrip',
+            'settings', 'videoquality', 'filmstrip',
             'invite', 'feedback', 'stats', 'shortcuts'
             ]}
         }
