@@ -80,7 +80,13 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
         options = {
             height:"100%",
             roomName,
-            parentNode: jitsiDiv
+            parentNode: jitsiDiv,
+            interfaceConfigOverwrite: {TOOLBAR_BUTTONS: [
+            'microphone', 'camera', 'desktop', 'fullscreen', 'fodeviceselection', 'hangup',
+            'profile', 'contacts', 'info', 'recording', 'etherpad',
+            'sharedvideo', 'settings', 'videoquality', 'filmstrip',
+            'invite', 'feedback', 'stats', 'shortcuts'
+            ]}
         }
         let jitsiAPIScript = document.createElement("script");
         jitsiAPIScript.setAttribute("type", "text/javascript");
