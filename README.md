@@ -16,4 +16,4 @@ requested, the user's camera & mic are disengaged so as to prevent unintended br
 This plugin does not require any modifications to the KiwiIRC codebase.
 All actions are dynamic and self-sufficient.
 
-![alt text](https://raw.githubusercontent.com/kiwiirc/plugin-conference/master/image1.png)
+![alt text](https://github.com/kiwiirc/plugin-conference/raw/master/image1.png)
