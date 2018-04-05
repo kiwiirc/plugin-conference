@@ -1,30 +1,27 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
 
   let jitsiDomain = "meet.jit.si" //domain of jitsi deployment
-  let camsVisible = camClick = mediaViewerOpen = jitsiLoaded = api = false;
+  let camsVisible = camClick = mediaViewerOpen = jitsiLoaded = api = buttonAdded = false;
   let jitsiDiv = resizejitsiDiv = network = buffer = options = domain = false;
   
   kiwi.on('irc.raw', function(command, event){
-    if(command === "JOIN"){
-      let el = document.getElementsByClassName("kiwi-controlinput-tools")[0];
-      if(el.innerHTML.indexOf("conferencingTool") === -1){
-        let a = document.createElement("a");
-        a.className = "kiwi-controlinput-tool";
-        a.onclick = function(e){
-          e.preventDefault();
-          camClick = true;
-          if(camsVisible){
-            kiwi.emit('mediaviewer.hide')
+    if(command === "JOIN" && !buttonAdded){
+      buttonAdded = true;
+      const conferencingTool = document.createElement('i');
+      conferencingTool.className = 'fa fa-video-camera';
+      kiwi.addUi('input', conferencingTool);
+      conferencingTool.onclick = function(e){
+        e.preventDefault();
+        camClick = true;
+        if(camsVisible){
+          kiwi.emit('mediaviewer.hide');
+        }else{
+          if(mediaViewerOpen){
+            showCams();
           }else{
-            if(mediaViewerOpen){
-              showCams();
-            }else{
-              kiwi.emit('mediaviewer.show', '');
-            }
+            kiwi.emit('mediaviewer.show', '');
           }
         }
-        a.innerHTML = '<i id="conferencingTool" class="fa fa-video-camera" aria-hidden="true"></i>';
-        el.appendChild(a);
       }
     }
   });
@@ -63,7 +60,10 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
         document.body.appendChild(jitsiDiv);
         network = window.kiwi.state.getActiveNetwork();
         buffer = window.kiwi.state.getActiveBuffer();
-        while(typeof buffer.name === "undefined") buffer = window.kiwi.state.getActiveBuffer();
+        let d = Date.now();
+        while(typeof buffer.name === "undefined" && Date.now() - d < 5000){ // allow up to 5 seconds to get buffer data
+          buffer = window.kiwi.state.getActiveBuffer();
+        }
         let suffix;
         if(buffer.name.indexOf("#") !== 0){ // cam is being invoked in PM, not a channel
           let nicks = [];
@@ -82,7 +82,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
             roomName,
             parentNode: jitsiDiv,
             interfaceConfigOverwrite: {TOOLBAR_BUTTONS: [
-            'microphone', 'camera', 'desktop', 'fullscreen', 'fodeviceselection', 'hangup',
+            'microphone', 'camera', 'fullscreen', 'fodeviceselection', 'hangup',
             'profile', 'contacts', 'info', 'recording', 'etherpad',
             'settings', 'videoquality', 'filmstrip',
             'invite', 'feedback', 'stats', 'shortcuts'

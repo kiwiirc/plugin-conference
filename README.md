@@ -1,6 +1,5 @@
-KiwiIRC - Jitsi Meet Plugin
+# KiwiIRC - Jitsi Meet Plugin
 
-This is to announce the completion of the first draft of a new conferencing plugin for KiwiIRC.
 This plugin integrates the Jitsi Meet software into KiwiIRC. 
 
 Features -
@@ -21,3 +20,4 @@ All actions are dynamic and self-sufficient.
 ![alt text](https://github.com/kiwiirc/plugin-conference/raw/master/image1.png)
 
 
+Questions? scott@londontrustmedia.com
