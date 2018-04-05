@@ -29,7 +29,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
   window.addEventListener("click", function(e){
     if(e.srcElement.className.indexOf("kiwi-messagelist-message-linkhandle") !== -1 ||
        e.srcElement.className.indexOf("u-button-secondary") !== -1){
-      kiwi.emit('mediaviewer.hide')
+      hideCams();
     }
   });
   
