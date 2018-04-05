@@ -25,8 +25,7 @@ install Jitsi Meet (https://jitsi.org/downloads/), and edit KiwiIRC's config fil
 to use your own domain. Like so:
 
 
-    "conference":{
-      "server": "meet.jit.si" },
+    "conference":{ "server": "meet.jit.si" },
     "plugins": [
       {"name": "conferencePlugin", "url": "/static/plugins/conferencePlugin.js"}
     ]
