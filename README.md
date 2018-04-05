@@ -26,10 +26,16 @@ to use your own domain. Like so:
 
 
   "conference":{
+  
     "server": "meet.jit.si" },
+    
   "plugins": [
+  
       {"name": "conferencePlugin", "url": "/static/plugins/conferencePlugin.js"}
+      
   ]
+  
+  
 
 
 Questions? scott@londontrustmedia.com
