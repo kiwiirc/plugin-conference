@@ -1,6 +1,6 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
 
-  let jitsiDomain = "meet.jit.si" //domain of jitsi deployment
+  let jitsiDomain = kiwi.state.setting('conference.server')
   let camsVisible = camClick = mediaViewerOpen = jitsiLoaded = api = buttonAdded = false;
   let jitsiDiv = resizejitsiDiv = network = buffer = options = domain = false;
   

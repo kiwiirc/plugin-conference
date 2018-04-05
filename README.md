@@ -21,7 +21,15 @@ All actions are dynamic and self-sufficient.
 
 
 By default, this plugin uses Jisti's public servers. To use your own servers, simply
-install Jitsi Meet (https://jitsi.org/downloads/), and edit the plugin to use your own
-domain. The line is near the top of the file.
+install Jitsi Meet (https://jitsi.org/downloads/), and edit KiwiIRC's config file
+to use your own domain. Like so:
+
+
+  "conference":{
+    "server": "meet.jit.si" },
+  "plugins": [
+      {"name": "conferencePlugin", "url": "/static/plugins/conferencePlugin.js"}
+  ]
+
 
 Questions? scott@londontrustmedia.com
