@@ -20,4 +20,8 @@ All actions are dynamic and self-sufficient.
 ![alt text](https://github.com/kiwiirc/plugin-conference/raw/master/image1.png)
 
 
+By default, this plugin uses Jisti's public servers. To use your own servers, simply
+install Jitsi Meet (https://jitsi.org/downloads/), and edit the plugin to use your own
+domain. The line is near the top of the file.
+
 Questions? scott@londontrustmedia.com
