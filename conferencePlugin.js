@@ -59,13 +59,13 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
         jitsiDiv.innerHTML = "Loading Camera...";
         document.body.appendChild(jitsiDiv);
         network = window.kiwi.state.getActiveNetwork();
-        buffer = window.kiwi.state.getActiveBuffer();
+        buffer = window.kiwi.state.getActiveBuffer(); 
         let d = Date.now();
         while(typeof buffer.name === "undefined" && Date.now() - d < 5000){ // allow up to 5 seconds to get buffer data
           buffer = window.kiwi.state.getActiveBuffer();
         }
         let suffix;
-        if(buffer.name.indexOf("#") !== 0){ // cam is being invoked in PM, not a channel
+        if(!network.isChannelName(buffer.name)){ // cam is being invoked in PM, not a channel
           let nicks = [];
           nicks.push(network.nick);
           nicks.push(buffer.name);
@@ -75,6 +75,8 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
         }else{
           suffix = buffer.name.replace("#", "");
         }
+        console.log(network);
+        console.log(buffer);
         let roomName = network.name + suffix;
         domain = jitsiDomain;
         options = {
