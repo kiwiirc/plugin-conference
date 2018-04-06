@@ -17,6 +17,8 @@ requested, the user's camera & mic are disengaged so as to prevent unintended br
 This plugin does not require any modifications to the KiwiIRC codebase.
 All actions are dynamic and self-sufficient.
 
+By default, the user's camera and mic are muted at connection to a conference.
+
 ![alt text](https://github.com/kiwiirc/plugin-conference/raw/master/image1.png)
 
 
@@ -27,7 +29,7 @@ to use your own domain. Like so:
 
     "conference":{ "server": "meet.jit.si" },
     "plugins": [
-      {"name": "conferencePlugin", "url": "/static/plugins/conferencePlugin.js"}
+      {"name": "conferencePlugin", "url": "/static/plugins/plugin-conference/plugin.js"}
     ]
   
   
