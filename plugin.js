@@ -73,10 +73,8 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
           let s = nicks.join('').replace(/-/g,"");
           suffix = encodeURIComponent(s.substring(0,s.indexOf("#")==-1?100:s.indexOf("#")-1));
         }else{
-          suffix = buffer.name.replace("#", "");
+          suffix = buffer.name.replace(/#/g, "");
         }
-        console.log(network);
-        console.log(buffer);
         let roomName = network.name + suffix;
         domain = jitsiDomain;
         options = {
