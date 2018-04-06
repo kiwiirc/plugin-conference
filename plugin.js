@@ -97,6 +97,8 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
             jitsiDiv.innerHTML="";
             api = new JitsiMeetExternalAPI(domain, options);
             api.executeCommand('displayName', network.nick);
+            api.executeCommand('toggleAudio')
+            api.executeCommand('toggleVideo')
           }
         });
         document.head.appendChild(jitsiAPIScript);
