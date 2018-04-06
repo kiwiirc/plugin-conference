@@ -106,6 +106,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
   }
 
   function hideCams(){
+    
     if(jitsiLoaded){
       jitsiDiv.style.display = "none";
       jitsiLoaded = false;
