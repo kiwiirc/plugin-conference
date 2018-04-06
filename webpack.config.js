@@ -19,8 +19,8 @@ module.exports = {
         host: "0.0.0.0",
 	port: 9000,
 	https: true,
-	cert: fs.readFileSync('fullchain.pem'),
-	key: fs.readFileSync('privkey.pem'),
+	cert: fs.readFileSync('../fullchain.pem'),
+	key: fs.readFileSync('../privkey.pem'),
         allowedHosts: [
           'cantelope.ml',
           'cantelope.gq',
