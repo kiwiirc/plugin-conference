@@ -29,7 +29,7 @@ to use your own domain. Like so:
 
     "conference":{ "server": "meet.jit.si" },
     "plugins": [
-      {"name": "conferencePlugin", "url": "/static/plugins/plugin-conference/dist/main.js"}
+      {"name": "conferencePlugin", "url": "./static/plugins/plugin-conference/dist/main.js"}
     ]
   
   
