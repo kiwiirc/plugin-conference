@@ -52,7 +52,10 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
           height:"100%",
           roomName,
           parentNode: jitsiDiv,
-          interfaceConfigOverwrite: {TOOLBAR_BUTTONS: [
+          interfaceConfigOverwrite: {
+          SHOW_JITSI_WATERMARK:false,
+          SHOW_WATERMARK_FOR_GUESTS:false,
+          TOOLBAR_BUTTONS: [
           'microphone', 'camera', 'fullscreen', 'fodeviceselection', 'hangup',
           'profile', 'contacts', 'info', 'recording', 'etherpad',
           'settings', 'videoquality', 'filmstrip',
