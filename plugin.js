@@ -49,7 +49,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       let roomName = network.name + suffix;
       domain = jitsiDomain;
       options = {
-          height:"100%",
+          height:"400px",
           roomName,
           parentNode: jitsiDiv,
           interfaceConfigOverwrite: {
