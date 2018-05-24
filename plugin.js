@@ -19,15 +19,16 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
   }
   
   function iframeizeCams(){
-    kiwi.emit('mediaviewer.show', { iframe: false, url: 'about:blank' });
+    kiwi.emit('mediaviewer.show', { iframe: true, url: 'about:blank' });
     setTimeout(() => {
-      if(typeof document.getElementsByClassName("embedly-card")[0] !== "undefined"){
-        jitsiDiv = document.getElementsByClassName("kiwi-mediaviewer")[0].childNodes[2];
-      }else{
-        jitsiDiv = document.getElementsByClassName("kiwi-mediaviewer")[0].childNodes[2];
-      }
-      jitsiDiv.style.width = '100%';
-      jitsiDiv.style.height = '100%';
+      let iframe = document.querySelector('.kiwi-mediaviewer iframe');
+      let mediaviewer = document.querySelector('.kiwi-mediaviewer');
+      let innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+      jitsiDiv = innerDoc.getElementsByTagName('body')[0];
+      jitsiDiv.style.margin = 0;
+      iframe.style.width = '100%';
+      mediaviewer.style.height = '45%';
+      iframe.style.height = '100%';
       
       network = window.kiwi.state.getActiveNetwork();
       buffer = window.kiwi.state.getActiveBuffer(); 
@@ -49,7 +50,6 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       let roomName = network.name + suffix;
       domain = jitsiDomain;
       options = {
-          height:"400px",
           roomName,
           parentNode: jitsiDiv,
           interfaceConfigOverwrite: {
