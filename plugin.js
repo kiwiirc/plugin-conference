@@ -57,9 +57,8 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
           SHOW_WATERMARK_FOR_GUESTS:false,
           TOOLBAR_BUTTONS: [
           'microphone', 'camera', 'fullscreen', 'fodeviceselection', 'hangup',
-          'profile', 'contacts', 'info', 'recording', 'etherpad',
           'settings', 'videoquality', 'filmstrip',
-          'invite', 'feedback', 'stats', 'shortcuts'
+          'stats', 'shortcuts'
           ]}
       }
       let jitsiAPIScript = document.createElement("script");
