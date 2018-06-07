@@ -22,17 +22,20 @@ By default, the user's camera and mic are muted at connection to a conference.
 ![alt text](https://github.com/kiwiirc/plugin-conference/raw/master/image1.png)
 
 
-By default, this plugin uses Jisti's public servers. To use your own servers, simply
-install Jitsi Meet (https://jitsi.org/downloads/), and edit KiwiIRC's config.json file
-to use your own domain. Like so:
+By default, this plugin uses Jisti's public servers. It should be noted that by using the
+public servers, your conferences are not necessarily secure. There is an option to use auth
+tokens to secure your conferences, but this requires setting up your own jisti server.
+To use your own servers, simply install Jitsi Meet (https://jitsi.org/downloads/), and edit
+KiwiIRC's config.json file to use your own domain. Like so:
 
 
-    "conference":{ "server": "meet.jit.si" },
+    "conference":{ "server": "your.domain" },
     "plugins": [
       {"name": "conferencePlugin", "url": "./static/plugins/plugin-conference/dist/main.js"}
     ]
   
   
-
+more info about Jitsi's options can be found in the docs
+(https://github.com/jitsi/jitsi-meet/blob/master/doc/quick-install.md)
 
 Questions? scott@londontrustmedia.com
