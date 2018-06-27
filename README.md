@@ -28,8 +28,23 @@ tokens to secure your conferences, but this requires setting up your own jisti s
 To use your own servers, simply install Jitsi Meet (https://jitsi.org/downloads/), and edit
 KiwiIRC's config.json file to use your own domain. Like so:
 
+Note: the settings below are optional. If any item is omitted, the settings default to this:
 
-    "conference":{ "server": "your.domain" },
+    "conference":{ 
+      "server": "meet.jit.si",
+      "jitsioptions": {
+        "SHOW_JITSI_WATERMARK": false,
+        "SHOW_WATERMARK_FOR_GUESTS": false,
+        "TOOLBAR_BUTTONS": [
+          "microphone", "camera", "fullscreen", "fodeviceselection", "hangup",
+          "settings", "videoquality", "filmstrip",
+          "stats", "shortcuts"
+        ]
+      }
+    },
+    
+Note: This is required for the plugin to function:
+
     "plugins": [
       {"name": "conferencePlugin", "url": "./static/plugins/plugin-conference/dist/main.js"}
     ]
