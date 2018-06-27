@@ -32,7 +32,7 @@ Note: the settings below are optional. If any item is omitted, the settings defa
 
     "conference":{ 
       "server": "meet.jit.si",
-      "jitsioptions": {
+      "interfaceConfigOverwrite": {
         "SHOW_JITSI_WATERMARK": false,
         "SHOW_WATERMARK_FOR_GUESTS": false,
         "TOOLBAR_BUTTONS": [
@@ -40,6 +40,8 @@ Note: the settings below are optional. If any item is omitted, the settings defa
           "settings", "videoquality", "filmstrip",
           "stats", "shortcuts"
         ]
+      },
+      "configOverwrite": {
       }
     },
     

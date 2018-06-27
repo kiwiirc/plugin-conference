@@ -3,8 +3,8 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
   let jitsiDiv = resizejitsiDiv = network = buffer = options = domain = false;
 
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si'
-  let jitsiOptionsFromConfig = kiwi.state.setting('conference.jitsioptions')
-  let jitsiOptions = {
+  let interfaceConfigOverwriteFromConfig = kiwi.state.setting('conference.interfaceConfigOverwrite') || {}
+  let interfaceConfigOverwrite = {
     "SHOW_JITSI_WATERMARK": false,
     "SHOW_WATERMARK_FOR_GUESTS": false,
     "TOOLBAR_BUTTONS": [
@@ -13,7 +13,11 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       "stats", "shortcuts"
     ]
   }
-  Object.keys(jitsiOptionsFromConfig).forEach(key => { jitsiOptions[key] = jitsiOptionsFromConfig[key]; });
+  Object.keys(interfaceConfigOverwriteFromConfig).forEach(key => { interfaceConfigOverwrite[key] = interfaceConfigOverwriteFromConfig[key]; });
+  
+  let configOverwriteFromConfig = kiwi.state.setting('conference.configOverwrite') || {}
+  let configOverwrite = {}
+  Object.keys(configOverwriteFromConfig).forEach(key => { configOverwrite[key] = configOverwriteFromConfig[key]; });
   
   
   if(!buttonAdded){
@@ -65,7 +69,8 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       options = {
           roomName,
           parentNode: jitsiDiv,
-          interfaceConfigOverwrite: jitsiOptions
+          interfaceConfigOverwrite,
+          configOverwrite
       }
       let jitsiAPIScript = document.createElement("script");
       jitsiAPIScript.setAttribute("type", "text/javascript");
