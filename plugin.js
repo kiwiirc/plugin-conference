@@ -3,13 +3,18 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
   let jitsiDiv = resizejitsiDiv = network = buffer = options = domain = false;
 
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si'
-  let jitsioptions = kiwi.state.setting('conference.jitsioptions')
-  if(typeof jitsioptions.SHOW_JITSI_WATERMARK === 'undefined') jitsioptions.SHOW_JITSI_WATERMARK = false;
-  if(typeof jitsioptions.SHOW_WATERMARK_FOR_GUESTS === 'undefined') jitsioptions.SHOW_WATERMARK_FOR_GUESTS = false;
-  if(typeof jitsioptions.TOOLBAR_BUTTONS === 'undefined') jitsioptions.TOOLBAR_BUTTONS = [
-        'microphone', 'camera', 'fullscreen', 'fodeviceselection', 'hangup',
-        'settings', 'videoquality', 'filmstrip',
-        'stats', 'shortcuts'];
+  let jitsiOptionsFromConfig = kiwi.state.setting('conference.jitsioptions')
+  let jitsiOptions = {
+    "SHOW_JITSI_WATERMARK": false,
+    "SHOW_WATERMARK_FOR_GUESTS": false,
+    "TOOLBAR_BUTTONS": [
+      "microphone", "camera", "fullscreen", "fodeviceselection", "hangup",
+      "settings", "videoquality", "filmstrip",
+      "stats", "shortcuts"
+    ]
+  }
+  Object.keys(jitsiOptionsFromConfig).forEach(key => { jitsiOptions[key] = jitsiOptionsFromConfig[key]; });
+  
   
   if(!buttonAdded){
     buttonAdded = true;
@@ -60,7 +65,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       options = {
           roomName,
           parentNode: jitsiDiv,
-          interfaceConfigOverwrite: jitsioptions
+          interfaceConfigOverwrite: jitsiOptions
       }
       let jitsiAPIScript = document.createElement("script");
       jitsiAPIScript.setAttribute("type", "text/javascript");
