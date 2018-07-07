@@ -65,7 +65,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       }else{
         suffix = buffer.name.replace(/#/g, "");
       }
-      let roomName = kiwi.state.setting('startupOptions.server') + ('/#' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
+      let roomName = (kiwi.state.setting('startupOptions.server') + '/#' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
       network.ircClient.raw('EXTJWT  #' + suffix)
       messages = network.buffers[0].getMessages();
       token = null
