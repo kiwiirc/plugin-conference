@@ -1,6 +1,6 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
-  let camsVisible = mediaViewerOpen = jitsiLoaded = api = buttonAdded = false;
-  let jitsiDiv = resizejitsiDiv = network = buffer = options = domain = false;
+  let camsVisible = mediaViewerOpen = jitsiLoaded = api = buttonAdded = token = false;
+  let jitsiDiv = resizejitsiDiv = network = buffer = messages = options = domain = false;
 
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si'
   let interfaceConfigOverwriteFromConfig = kiwi.state.setting('conference.interfaceConfigOverwrite') || {}
@@ -48,7 +48,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       iframe.style.height = '100%';
       
       network = window.kiwi.state.getActiveNetwork();
-      buffer = window.kiwi.state.getActiveBuffer(); 
+      buffer = window.kiwi.state.getActiveBuffer();
       let d = Date.now();
       while(typeof buffer.name === "undefined" && Date.now() - d < 5000){ // allow up to 5 seconds to get buffer data
         buffer = window.kiwi.state.getActiveBuffer();
@@ -59,37 +59,51 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
         nicks.push(network.nick);
         nicks.push(buffer.name);
         nicks.sort();
+        nicks[0] += '#';
         let s = nicks.join('').replace(/-/g,"");
         suffix = encodeURIComponent(s.substring(0,s.indexOf("#")==-1?100:s.indexOf("#")-1));
       }else{
         suffix = buffer.name.replace(/#/g, "");
       }
-      let roomName = network.name + suffix;
-      domain = jitsiDomain;
-      options = {
-          roomName,
-          parentNode: jitsiDiv,
-          interfaceConfigOverwrite,
-          configOverwrite
-      }
-      let jitsiAPIScript = document.createElement("script");
-      jitsiAPIScript.setAttribute("type", "text/javascript");
-      jitsiAPIScript.setAttribute("src", "https://meet.jit.si/external_api.js");
-      jitsiAPIScript.addEventListener("load", function(event){
-        if(event.target.nodeName === "SCRIPT"){
-          jitsiLoaded = true;
-          jitsiDiv.innerHTML="";
-          api = new JitsiMeetExternalAPI(domain, options);
-          api.executeCommand('displayName', network.nick);
-          api.executeCommand('toggleAudio');
-          api.executeCommand('toggleVideo');
+      let roomName = kiwi.state.setting('startupOptions.server') + ('/#' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
+      network.ircClient.raw('EXTJWT  #' + suffix)
+      messages = network.buffers[0].getMessages();
+      token = null
+      let interval = setInterval(function () {
+        for(let i = 0; i < messages.length; ++i){
+          if (messages[i].message.substring(0,6) === 'EXTJWT') {
+            clearInterval(interval);
+            token = messages[i].message.substring(messages[i].message.indexOf(',') + 2)
+            domain = jitsiDomain;
+            options = {
+                roomName,
+                parentNode: jitsiDiv,
+                interfaceConfigOverwrite,
+                configOverwrite
+            }
+            let jitsiAPIScript = document.createElement("script");
+            jitsiAPIScript.setAttribute("type", "text/javascript");
+            jitsiAPIScript.setAttribute("src", "https://meet.jit.si/external_api.js");
+            jitsiAPIScript.addEventListener("load", function(event){
+              if(event.target.nodeName === "SCRIPT"){
+                jitsiLoaded = true;
+                jitsiDiv.innerHTML="";
+                options.jwt = token;
+                options.noSsl = false;
+                api = new JitsiMeetExternalAPI(domain, options);
+                api.executeCommand('displayName', network.nick);
+                api.executeCommand('toggleAudio');
+                api.executeCommand('toggleVideo');
+              }
+            });
+            if(!jitsiLoaded){
+              jitsiLoaded = true;
+              document.head.appendChild(jitsiAPIScript);
+            }
+          }
         }
-      });
-      if(!jitsiLoaded){
-        jitsiLoaded = true;
-        document.head.appendChild(jitsiAPIScript);
-      }
-    },100);
+      }, 100);
+    }, 100);
   }
   
   window.addEventListener("click", function(e){
