@@ -69,39 +69,38 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
           token = null
           let interval = setInterval(function () {
             messages = network.buffers[0].getMessages();
-            for(let i = 0; i < messages.length; ++i){
-              if (messages[i].message.substring(0,6) === 'EXTJWT') {
-                clearInterval(interval);
-                token = messages[i].message.substring(messages[i].message.indexOf(',') + 2)
-                domain = jitsiDomain;
-                options = {
-                    roomName,
-                    parentNode: jitsiDiv,
-                    interfaceConfigOverwrite,
-                    configOverwrite
-                }
-                let jitsiAPIScript = document.createElement("script");
-                jitsiAPIScript.setAttribute("type", "text/javascript");
-                jitsiAPIScript.setAttribute("src", "https://meet.jit.si/external_api.js");
-                jitsiAPIScript.addEventListener("load", function(event){
-                  if(event.target.nodeName === "SCRIPT"){
-                    jitsiLoaded = true;
-                    jitsiDiv.innerHTML="";
-                    options.jwt = token;
-                    options.noSsl = false;
-                    api = new JitsiMeetExternalAPI(domain, options);
-                    api.executeCommand('displayName', network.nick);
-                    api.executeCommand('toggleAudio');
-                    api.executeCommand('toggleVideo');
-                  }
-                });
-                if(!jitsiLoaded){
+            let message = messages[messages.length - 1].message;
+            if (message.substring(0,6) === 'EXTJWT') {
+              clearInterval(interval);
+              token = message.substring(message.indexOf(',') + 2)
+              domain = jitsiDomain;
+              options = {
+                  roomName,
+                  parentNode: jitsiDiv,
+                  interfaceConfigOverwrite,
+                  configOverwrite
+              }
+              let jitsiAPIScript = document.createElement("script");
+              jitsiAPIScript.setAttribute("type", "text/javascript");
+              jitsiAPIScript.setAttribute("src", "https://meet.jit.si/external_api.js");
+              jitsiAPIScript.addEventListener("load", function(event){
+                if(event.target.nodeName === "SCRIPT"){
                   jitsiLoaded = true;
-                  document.head.appendChild(jitsiAPIScript);
+                  jitsiDiv.innerHTML="";
+                  options.jwt = token;
+                  options.noSsl = false;
+                  api = new JitsiMeetExternalAPI(domain, options);
+                  api.executeCommand('displayName', network.nick);
+                  api.executeCommand('toggleAudio');
+                  api.executeCommand('toggleVideo');
                 }
+              });
+              if(!jitsiLoaded){
+                jitsiLoaded = true;
+                document.head.appendChild(jitsiAPIScript);
               }
             }
-          }, 2000);
+          }, 10);
         }
       }, 10);
     }, 100);
