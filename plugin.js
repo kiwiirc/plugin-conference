@@ -47,62 +47,63 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       mediaviewer.style.height = '45%';
       iframe.style.height = '100%';
       
-      network = window.kiwi.state.getActiveNetwork();
-      buffer = window.kiwi.state.getActiveBuffer();
       let d = Date.now();
-      while(typeof buffer.name === "undefined" && Date.now() - d < 5000){ // allow up to 5 seconds to get buffer data
+      let loader = setInterval(function() {
+        network = window.kiwi.state.getActiveNetwork();
         buffer = window.kiwi.state.getActiveBuffer();
-      }
-      let suffix;
-      if(!network.isChannelName(buffer.name)){ // cam is being invoked in PM, not a channel
-        let nicks = [];
-        nicks.push(network.nick);
-        nicks.push(buffer.name);
-        nicks.sort();
-        nicks[0] += '#';
-        let s = nicks.join('').replace(/-/g,"");
-        suffix = encodeURIComponent(s.substring(0,s.indexOf("#")==-1?100:s.indexOf("#")-1));
-      }else{
-        suffix = buffer.name.replace(/#/g, "");
-      }
-      let roomName = (kiwi.state.setting('startupOptions.server') + '/#' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
-      network.ircClient.raw('EXTJWT  #' + suffix)
-      messages = network.buffers[0].getMessages();
-      token = null
-      let interval = setInterval(function () {
-        for(let i = 0; i < messages.length; ++i){
-          if (messages[i].message.substring(0,6) === 'EXTJWT') {
-            clearInterval(interval);
-            token = messages[i].message.substring(messages[i].message.indexOf(',') + 2)
-            domain = jitsiDomain;
-            options = {
-                roomName,
-                parentNode: jitsiDiv,
-                interfaceConfigOverwrite,
-                configOverwrite
-            }
-            let jitsiAPIScript = document.createElement("script");
-            jitsiAPIScript.setAttribute("type", "text/javascript");
-            jitsiAPIScript.setAttribute("src", "https://meet.jit.si/external_api.js");
-            jitsiAPIScript.addEventListener("load", function(event){
-              if(event.target.nodeName === "SCRIPT"){
-                jitsiLoaded = true;
-                jitsiDiv.innerHTML="";
-                options.jwt = token;
-                options.noSsl = false;
-                api = new JitsiMeetExternalAPI(domain, options);
-                api.executeCommand('displayName', network.nick);
-                api.executeCommand('toggleAudio');
-                api.executeCommand('toggleVideo');
-              }
-            });
-            if(!jitsiLoaded){
-              jitsiLoaded = true;
-              document.head.appendChild(jitsiAPIScript);
-            }
+        if(typeof buffer.name !== "undefined" || Date.now() - d > 5000){ // allow up to 5 seconds to get buffer data
+          clearInterval(loader);
+          let suffix;
+          if(!network.isChannelName(buffer.name)){ // cam is being invoked in PM, not a channel
+            let nicks = [];
+            nicks.push(network.nick);
+            nicks.push(buffer.name);
+            nicks.sort();
+            nicks[0] = 'query-' + nicks[0] + '#';
+            suffix = nicks.join('');
+          }else{
+            suffix = buffer.name;
           }
+          let roomName = (kiwi.state.setting('startupOptions.server') + '/' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
+          network.ircClient.raw('EXTJWT ' + suffix)
+          token = null
+          let interval = setInterval(function () {
+            messages = network.buffers[0].getMessages();
+            for(let i = 0; i < messages.length; ++i){
+              if (messages[i].message.substring(0,6) === 'EXTJWT') {
+                clearInterval(interval);
+                token = messages[i].message.substring(messages[i].message.indexOf(',') + 2)
+                domain = jitsiDomain;
+                options = {
+                    roomName,
+                    parentNode: jitsiDiv,
+                    interfaceConfigOverwrite,
+                    configOverwrite
+                }
+                let jitsiAPIScript = document.createElement("script");
+                jitsiAPIScript.setAttribute("type", "text/javascript");
+                jitsiAPIScript.setAttribute("src", "https://meet.jit.si/external_api.js");
+                jitsiAPIScript.addEventListener("load", function(event){
+                  if(event.target.nodeName === "SCRIPT"){
+                    jitsiLoaded = true;
+                    jitsiDiv.innerHTML="";
+                    options.jwt = token;
+                    options.noSsl = false;
+                    api = new JitsiMeetExternalAPI(domain, options);
+                    api.executeCommand('displayName', network.nick);
+                    api.executeCommand('toggleAudio');
+                    api.executeCommand('toggleVideo');
+                  }
+                });
+                if(!jitsiLoaded){
+                  jitsiLoaded = true;
+                  document.head.appendChild(jitsiAPIScript);
+                }
+              }
+            }
+          }, 2000);
         }
-      }, 100);
+      }, 10);
     }, 100);
   }
   
