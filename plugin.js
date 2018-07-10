@@ -64,18 +64,18 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
           }else{
             suffix = buffer.name;
           }
-          let roomName = (kiwi.state.setting('startupOptions.server') + '/' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
+          let roomName = (network.connection.server + '/' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
           network.ircClient.raw('EXTJWT ' + suffix)
-          token = null
           let interval = setInterval(function () {
             messages = network.buffers[0].getMessages();
             let message = messages[messages.length - 1].message;
-            if (message.substring(0,6) === 'EXTJWT') {
+            if (message.substring(0,6) === 'EXTJWT' && message.substring(message.indexOf(',') + 2) !== token) {
               clearInterval(interval);
               token = message.substring(message.indexOf(',') + 2)
               domain = jitsiDomain;
               options = {
                   roomName,
+                  displayName: buffer.name,
                   parentNode: jitsiDiv,
                   interfaceConfigOverwrite,
                   configOverwrite
