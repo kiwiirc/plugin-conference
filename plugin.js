@@ -106,12 +106,6 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     }, 100);
   }
   
-  window.addEventListener("click", function(e){
-    if(e.srcElement.className.indexOf("u-button-secondary") !== -1){
-      hideCams();
-    }
-  });
-  
   function showCams(){
     if(!camsVisible){
       camsVisible = true;
