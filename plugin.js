@@ -44,7 +44,9 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       let iframe = document.querySelector('.kiwi-mediaviewer iframe');
       let mediaviewer = document.querySelector('.kiwi-mediaviewer');
       let innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+      let innerWindow = iframe.contentWindow;
       jitsiDiv = innerDoc.getElementsByTagName('body')[0];
+      let innerHead = innerDoc.getElementsByTagName('head')[0];
       jitsiDiv.style.margin = 0;
       iframe.style.width = '100%';
       mediaviewer.style.height = '45%';
@@ -68,40 +70,38 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
             suffix = buffer.name;
           }
           let roomName = (network.connection.server + '/' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
-          network.ircClient.raw('EXTJWT ' + suffix)
-          let interval = setInterval(function () {
-            messages = network.buffers[0].getMessages();
-            let message = messages[messages.length - 1].message;
-            if (message.substring(0,6) === 'EXTJWT' && message.substring(message.indexOf(',') + 2) !== token) {
-              clearInterval(interval);
-              token = message.substring(message.indexOf(',') + 2)
-              domain = jitsiDomain;
-              options = {
-                  roomName,
-                  displayName: buffer.name,
-                  parentNode: jitsiDiv,
-                  interfaceConfigOverwrite,
-                  configOverwrite
-              }
-              let jitsiAPIScript = document.createElement("script");
-              jitsiAPIScript.setAttribute("type", "text/javascript");
-              jitsiAPIScript.setAttribute("src", "https://meet.jit.si/external_api.js");
-              jitsiAPIScript.addEventListener("load", function(event){
-                if(event.target.nodeName === "SCRIPT"){
-                  jitsiLoaded = true;
-                  jitsiDiv.innerHTML="";
-                  options.jwt = token;
-                  options.noSsl = false;
-                  api = new JitsiMeetExternalAPI(domain, options);
-                  api.executeCommand('displayName', network.nick);
-                }
-              });
-              if(!jitsiLoaded){
-                jitsiLoaded = true;
-                document.head.appendChild(jitsiAPIScript);
-              }
+          kiwi.once('irc.raw.EXTJWT', function(command, message) {
+            token = message.params[1]
+            domain = jitsiDomain;
+            options = {
+                roomName,
+                displayName: buffer.name,
+                parentNode: jitsiDiv,
+                interfaceConfigOverwrite,
+                configOverwrite
             }
-          }, 10);
+            let jitsiAPIScript = innerDoc.createElement("script");
+            jitsiAPIScript.setAttribute("type", "text/javascript");
+            jitsiAPIScript.setAttribute("src", "https://meet.jit.si/external_api.js");
+            jitsiAPIScript.addEventListener("load", function(event){
+              if(event.target.nodeName === "SCRIPT"){
+                jitsiLoaded = true;
+                jitsiDiv.innerHTML="";
+                options.jwt = token;
+                options.noSsl = false;
+                api = new innerWindow.JitsiMeetExternalAPI(domain, options);
+                api.executeCommand('displayName', network.nick);
+                api.on('videoConferenceLeft', () => {
+                  hideCams();
+                });
+              }
+            });
+            if(!jitsiLoaded){
+              jitsiLoaded = true;
+              innerHead.appendChild(jitsiAPIScript);
+            }
+          });
+          network.ircClient.raw('EXTJWT ' + suffix)
         }
       }, 10);
     }, 100);
