@@ -16,7 +16,10 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
   Object.keys(interfaceConfigOverwriteFromConfig).forEach(key => { interfaceConfigOverwrite[key] = interfaceConfigOverwriteFromConfig[key]; });
   
   let configOverwriteFromConfig = kiwi.state.setting('conference.configOverwrite') || {}
-  let configOverwrite = {}
+  let configOverwrite = {
+    "startWithVideoMuted": true,
+    "startWithAudioMuted": true
+  }
   Object.keys(configOverwriteFromConfig).forEach(key => { configOverwrite[key] = configOverwriteFromConfig[key]; });
   
   
@@ -91,8 +94,6 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
                   options.noSsl = false;
                   api = new JitsiMeetExternalAPI(domain, options);
                   api.executeCommand('displayName', network.nick);
-                  api.executeCommand('toggleAudio');
-                  api.executeCommand('toggleVideo');
                 }
               });
               if(!jitsiLoaded){
