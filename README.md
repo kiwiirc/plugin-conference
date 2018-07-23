@@ -1,5 +1,7 @@
 # KiwiIRC - Audio / Video conferencing
 
+### Status - in development
+
 This plugin integrates the [Jitsi Meet](https://jitsi.org/jitsi-meet/) conference software into KiwiIRC. 
 
 Features -
