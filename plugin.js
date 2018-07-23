@@ -30,6 +30,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     conferencingTool.style.cursor = 'pointer';
     conferencingTool.innerHTML = '<i aria-hidden="true" class="fa fa-phone"></i>';
     kiwi.addUi('header_channel', conferencingTool);
+    kiwi.addUi('header_query', conferencingTool);
     conferencingTool.onclick = function(e){
       e.preventDefault();
       if(camsVisible){
