@@ -25,10 +25,12 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
   
   if(!buttonAdded){
     buttonAdded = true;
-    const conferencingTool = document.createElement('i');
-    conferencingTool.className = 'fa fa-video-camera';
-    kiwi.addUi('input', conferencingTool);
-    conferencingTool.onclick = function(e){ 
+    const conferencingTool = document.createElement('div');
+    conferencingTool.style.marginLeft = '10px';
+    conferencingTool.style.cursor = 'pointer';
+    conferencingTool.innerHTML = '<i aria-hidden="true" class="fa fa-phone"></i>';
+    kiwi.addUi('header_channel', conferencingTool);
+    conferencingTool.onclick = function(e){
       e.preventDefault();
       if(camsVisible){
         hideCams();
