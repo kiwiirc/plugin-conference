@@ -39,6 +39,22 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
         showCams();
       }
     }
+    kiwi.on('message.new', function (e) {
+      if (e.message.indexOf('has joined the conference.') !== -1) {
+        let nick = e.message.substring(2, e.message.indexOf('has joined the conference.'));
+        console.log(nick.toLowerCase(), window.kiwi.state.getActiveNetwork().nick.toLowerCase());
+        if(nick.toLowerCase() === 'ha') return;
+        e.template = kiwi.Vue.extend({template:`<div style="width:100%; padding: 20px; background: #ccc; text-align: center; color: #000; font-size: 2em;">
+                                  <i aria-hidden="true" class="fa fa-phone"></i>
+                                  ${nick} has joined the conference call.
+                                  <button @click="iframeizeCams()">Join now!</button>
+                                </div>`,
+                                methods:{
+                                  iframeizeCams: iframeizeCams,
+                                }
+                              });
+      }
+    });
   }
   
   function iframeizeCams(){
