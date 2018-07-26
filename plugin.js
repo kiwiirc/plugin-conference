@@ -72,6 +72,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
           }else{
             suffix = buffer.name;
           }
+          buffer.say('has joined the conference.', {type: 'action'});
           let roomName = (network.connection.server + '/' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
           kiwi.once('irc.raw.EXTJWT', function(command, message) {
             token = message.params[1]
