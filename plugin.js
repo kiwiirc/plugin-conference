@@ -40,13 +40,22 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       }
     }
     kiwi.on('message.new', function (e) {
+      let showComponent = false;
       if (e.message.indexOf('has joined the conference.') !== -1) {
-        let nick = e.message.substring(2, e.message.indexOf('has joined the conference.'));
-        console.log(nick.toLowerCase(), window.kiwi.state.getActiveNetwork().nick.toLowerCase());
-        if(nick.toLowerCase() === 'ha') return;
+        var message = 'has joined the conference.';
+        var nick = e.message.substring(2, e.message.indexOf(message));
+        if(nick === 'ha') return;
+        showComponent = true;
+      } else if (e.message.indexOf('is inviting you to a private call.') !== -1) {
+        var message = 'is inviting you to a private call.';
+        var nick = e.message.substring(2, e.message.indexOf(message));
+        if(nick === 'is') return;
+        showComponent = true;
+      }
+      if (showComponent) {
         e.template = kiwi.Vue.extend({template:`<div style="width:100%; padding: 20px; background: #ccc; text-align: center; color: #000; font-size: 2em;">
                                   <i aria-hidden="true" class="fa fa-phone"></i>
-                                  ${nick} has joined the conference call.
+                                  ${nick + message}
                                   <button @click="iframeizeCams()">Join now!</button>
                                 </div>`,
                                 methods:{
@@ -85,10 +94,11 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
             nicks.sort();
             nicks[0] = 'query-' + nicks[0] + '#';
             suffix = nicks.join('');
+            buffer.say('is inviting you to a private call.', {type: 'action'});
           }else{
             suffix = buffer.name;
+            buffer.say('has joined the conference.', {type: 'action'});
           }
-          buffer.say('has joined the conference.', {type: 'action'});
           let roomName = (network.connection.server + '/' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
           kiwi.once('irc.raw.EXTJWT', function(command, message) {
             token = message.params[1]
