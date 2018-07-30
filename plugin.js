@@ -1,7 +1,7 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
   let api = buttonAdded = token = jitsiDiv = network = buffer = messages = options = domain = false;
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si'
-  let jitsiApiUrl = kiwi.state.setting('conference.jitsiApiUrl') || '//' + jitsiDomain + '/external_api.min.js'
+  let jitsiApiUrl = kiwi.state.setting('conference.jitsiApiUrl') || 'https://' + jitsiDomain + '/external_api.min.js'
   let interfaceConfigOverwriteFromConfig = kiwi.state.setting('conference.interfaceConfigOverwrite') || {}
   let interfaceConfigOverwrite = {
     "SHOW_JITSI_WATERMARK": false,
