@@ -68,23 +68,25 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     let showComponent = false;
     let message = '';
     let nick = '';
-    if (e.message.indexOf('has joined the conference.') !== -1) {
-      message = 'has joined the conference.';
-      nick = e.message.substring(2, e.message.indexOf(message));
-      if(e.message === message) return;
-      showComponent = true;
-    } else if (e.message.indexOf('is inviting you to a private call.') !== -1) {
-      message = 'is inviting you to a private call.';
-      nick = e.message.substring(2, e.message.indexOf(message));
-      if(e.message === message) return;
-      showComponent = true;
-    }
-    if (showComponent) {
-      e.template = joinCallMessageComponent.extend({
-        data() {
-          return { caption: nick + message };
-        }
-      });
+    if (e.tags && typeof e.tags['+kiwiirc.com/conference'] !== 'undefined') {
+      if (e.message.indexOf('has joined the conference.') !== -1) {
+        message = 'has joined the conference.';
+        nick = e.message.substring(2, e.message.indexOf(message));
+        if(e.message === message) return;
+        showComponent = true;
+      } else if (e.message.indexOf('is inviting you to a private call.') !== -1) {
+        message = 'is inviting you to a private call.';
+        nick = e.message.substring(2, e.message.indexOf(message));
+        if(e.message === message) return;
+        showComponent = true;
+      }
+      if (showComponent) {
+        e.template = joinCallMessageComponent.extend({
+          data() {
+            return { caption: nick + message };
+          }
+        });
+      }
     }
   });
   
@@ -104,6 +106,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     let buffer = window.kiwi.state.getActiveBuffer();
 
     let roomName;
+    let m = null;
     if(!network.isChannelName(buffer.name)){ // cam is being invoked in PM, not a channel
       let nicks = [];
       nicks.push(network.nick);
@@ -111,11 +114,16 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       nicks.sort();
       nicks[0] = 'query-' + nicks[0] + '#';
       roomName = nicks.join('');
-      buffer.say('is inviting you to a private call.', {type: 'action'});
+      // buffer.say('is inviting you to a private call.', {type: 'action'});
+      m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' is inviting you to a private call.');
     }else{
       roomName = buffer.name;
-      buffer.say('has joined the conference.', {type: 'action'});
+      // buffer.say('has joined the conference.', {type: 'action'});
+      m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' has joined the conference.');
     }
+
+    m.tags['+kiwiirc.com/conference'] = true;
+    network.ircClient.raw(m);
 
     // Get the JWT token from the network
     kiwi.once('irc.raw.EXTJWT', function(command, message) {
