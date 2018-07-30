@@ -1,7 +1,7 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
   let api = buttonAdded = token = jitsiDiv = network = buffer = messages = options = domain = false;
-
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si'
+  let jitsiApiUrl = kiwi.state.setting('conference.jitsiApiUrl') || '//' + jitsiDomain + '/external_api.min.js'
   let interfaceConfigOverwriteFromConfig = kiwi.state.setting('conference.interfaceConfigOverwrite') || {}
   let interfaceConfigOverwrite = {
     "SHOW_JITSI_WATERMARK": false,
@@ -107,7 +107,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
         }
         let jitsiAPIScript = innerDoc.createElement("script");
         jitsiAPIScript.setAttribute("type", "text/javascript");
-        jitsiAPIScript.setAttribute("src", "/external_api.min.js");
+        jitsiAPIScript.setAttribute("src", jitsiApiUrl);
         jitsiAPIScript.addEventListener("load", function(event){
           if(event.target.nodeName === "SCRIPT"){
             jitsiDiv.innerHTML="";
