@@ -1,6 +1,5 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
-  let camsVisible = mediaViewerOpen = jitsiLoaded = api = buttonAdded = token = false;
-  let jitsiDiv = resizejitsiDiv = network = buffer = messages = options = domain = false;
+  let api = buttonAdded = token = jitsiDiv = network = buffer = messages = options = domain = false;
 
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si'
   let interfaceConfigOverwriteFromConfig = kiwi.state.setting('conference.interfaceConfigOverwrite') || {}
@@ -33,7 +32,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     kiwi.addUi('header_query', conferencingTool);
     conferencingTool.onclick = function(e){
       e.preventDefault();
-      if(camsVisible){
+      if(api){
         hideCams();
       }else{
         showCams();
@@ -44,29 +43,29 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       if (e.message.indexOf('has joined the conference.') !== -1) {
         var message = 'has joined the conference.';
         var nick = e.message.substring(2, e.message.indexOf(message));
-        if(nick === 'ha') return;
+        if(e.message === message) return;
         showComponent = true;
       } else if (e.message.indexOf('is inviting you to a private call.') !== -1) {
         var message = 'is inviting you to a private call.';
         var nick = e.message.substring(2, e.message.indexOf(message));
-        if(nick === 'is') return;
+        if(e.message === message) return;
         showComponent = true;
       }
       if (showComponent) {
         e.template = kiwi.Vue.extend({template:`<div style="width:100%; padding: 20px; background: #ccc; text-align: center; color: #000; font-size: 2em;">
                                   <i aria-hidden="true" class="fa fa-phone"></i>
                                   ${nick + message}
-                                  <button @click="iframeizeCams()">Join now!</button>
+                                  <button @click="showCams()">Join now!</button>
                                 </div>`,
                                 methods:{
-                                  iframeizeCams: iframeizeCams,
+                                  showCams: showCams,
                                 }
                               });
       }
     });
   }
   
-  function iframeizeCams(){
+  function showCams(){
     kiwi.emit('mediaviewer.show', { iframe: true, url: 'about:blank' });
     setTimeout(() => {
       let iframe = document.querySelector('.kiwi-mediaviewer iframe');
@@ -80,88 +79,57 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       mediaviewer.style.height = '45%';
       iframe.style.height = '100%';
       
-      let d = Date.now();
-      let loader = setInterval(function() {
-        network = window.kiwi.state.getActiveNetwork();
-        buffer = window.kiwi.state.getActiveBuffer();
-        if(typeof buffer.name !== "undefined" || Date.now() - d > 5000){ // allow up to 5 seconds to get buffer data
-          clearInterval(loader);
-          let suffix;
-          if(!network.isChannelName(buffer.name)){ // cam is being invoked in PM, not a channel
-            let nicks = [];
-            nicks.push(network.nick);
-            nicks.push(buffer.name);
-            nicks.sort();
-            nicks[0] = 'query-' + nicks[0] + '#';
-            suffix = nicks.join('');
-            buffer.say('is inviting you to a private call.', {type: 'action'});
-          }else{
-            suffix = buffer.name;
-            buffer.say('has joined the conference.', {type: 'action'});
-          }
-          let roomName = (network.connection.server + '/' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
-          kiwi.once('irc.raw.EXTJWT', function(command, message) {
-            token = message.params[1]
-            domain = jitsiDomain;
-            options = {
-                roomName,
-                displayName: buffer.name,
-                parentNode: jitsiDiv,
-                interfaceConfigOverwrite,
-                configOverwrite
-            }
-            let jitsiAPIScript = innerDoc.createElement("script");
-            jitsiAPIScript.setAttribute("type", "text/javascript");
-            jitsiAPIScript.setAttribute("src", "https://meet.jit.si/external_api.js");
-            jitsiAPIScript.addEventListener("load", function(event){
-              if(event.target.nodeName === "SCRIPT"){
-                jitsiLoaded = true;
-                jitsiDiv.innerHTML="";
-                options.jwt = token;
-                options.noSsl = false;
-                api = new innerWindow.JitsiMeetExternalAPI(domain, options);
-                api.executeCommand('displayName', network.nick);
-                api.on('videoConferenceLeft', () => {
-                  hideCams();
-                });
-              }
-            });
-            if(!jitsiLoaded){
-              jitsiLoaded = true;
-              innerHead.appendChild(jitsiAPIScript);
-            }
-          });
-          network.ircClient.raw('EXTJWT ' + suffix)
+      network = window.kiwi.state.getActiveNetwork();
+      buffer = window.kiwi.state.getActiveBuffer();
+      let suffix;
+      if(!network.isChannelName(buffer.name)){ // cam is being invoked in PM, not a channel
+        let nicks = [];
+        nicks.push(network.nick);
+        nicks.push(buffer.name);
+        nicks.sort();
+        nicks[0] = 'query-' + nicks[0] + '#';
+        suffix = nicks.join('');
+        buffer.say('is inviting you to a private call.', {type: 'action'});
+      }else{
+        suffix = buffer.name;
+        buffer.say('has joined the conference.', {type: 'action'});
+      }
+      let roomName = (network.connection.server + '/' + suffix).split('').map(c => c.charCodeAt(0).toString(16)).join('');
+      kiwi.once('irc.raw.EXTJWT', function(command, message) {
+        token = message.params[1]
+        domain = jitsiDomain;
+        options = {
+            roomName,
+            displayName: buffer.name,
+            parentNode: jitsiDiv,
+            interfaceConfigOverwrite,
+            configOverwrite
         }
-      }, 10);
-    }, 100);
+        let jitsiAPIScript = innerDoc.createElement("script");
+        jitsiAPIScript.setAttribute("type", "text/javascript");
+        jitsiAPIScript.setAttribute("src", "/external_api.min.js");
+        jitsiAPIScript.addEventListener("load", function(event){
+          if(event.target.nodeName === "SCRIPT"){
+            jitsiDiv.innerHTML="";
+            options.jwt = token;
+            options.noSsl = false;
+            api = new innerWindow.JitsiMeetExternalAPI(domain, options);
+            api.executeCommand('displayName', network.nick);
+            api.on('videoConferenceLeft', () => {
+              hideCams();
+            });
+          }
+        });
+        innerHead.appendChild(jitsiAPIScript);
+      });
+      network.ircClient.raw('EXTJWT ' + suffix)
+    }, 10);
   }
   
-  function showCams(){
-    if(!camsVisible){
-      camsVisible = true;
-      iframeizeCams();
-    }
-  }
-
   function hideCams(){
-    
-    if(jitsiLoaded){
-      jitsiDiv.style.display = "none";
-      jitsiLoaded = false;
-      api.dispose();
-    }
+    jitsiDiv.style.display = "none";
+    api.dispose();
+    api = false;
     kiwi.emit('mediaviewer.hide');
   }
-  
-  kiwi.on('mediaviewer.opened', function(){
-    mediaViewerOpen = true;
-    //showCams();
-  });
-  
-  kiwi.on('mediaviewer.hide', function(){
-    mediaViewerOpen = false;
-    camsVisible = false;
-    jitsiLoaded = false;
-  });
 });
