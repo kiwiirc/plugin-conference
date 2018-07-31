@@ -70,7 +70,6 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     let nick = '';
     if (newMessage.tags && typeof newMessage.tags['+kiwiirc.com/conference'] !== 'undefined' && newMessage.tags['+kiwiirc.com/conference']) {
       nick = newMessage.nick;
-      console.log(buffer);
       if (buffer.isChannel()) {
         message = 'has joined the conference.';
         showComponent = true;
