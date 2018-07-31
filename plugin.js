@@ -64,26 +64,26 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     },
   });
 
-  kiwi.on('message.new', function (e) {
+  kiwi.on('message.new', function (newMessage, buffer) {
     let showComponent = false;
     let message = '';
     let nick = '';
-    if (e.tags && typeof e.tags['+kiwiirc.com/conference'] !== 'undefined') {
-      if (e.message.indexOf('has joined the conference.') !== -1) {
+    if (newMessage.tags && typeof newMessage.tags['+kiwiirc.com/conference'] !== 'undefined' && newMessage.tags['+kiwiirc.com/conference']) {
+      nick = newMessage.nick;
+      console.log(buffer);
+      if (buffer.isChannel()) {
         message = 'has joined the conference.';
-        nick = e.message.substring(2, e.message.indexOf(message));
-        if(e.message === message) return;
+        // if(newMessage.message === message) return;
         showComponent = true;
-      } else if (e.message.indexOf('is inviting you to a private call.') !== -1) {
+      } else {
         message = 'is inviting you to a private call.';
-        nick = e.message.substring(2, e.message.indexOf(message));
-        if(e.message === message) return;
+        // if(e.message === message) return;
         showComponent = true;
       }
       if (showComponent) {
-        e.template = joinCallMessageComponent.extend({
+        newMessage.template = joinCallMessageComponent.extend({
           data() {
-            return { caption: nick + message };
+            return { caption: nick + ' ' +  message };
           }
         });
       }
