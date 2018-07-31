@@ -73,11 +73,9 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       console.log(buffer);
       if (buffer.isChannel()) {
         message = 'has joined the conference.';
-        // if(newMessage.message === message) return;
         showComponent = true;
       } else {
         message = 'is inviting you to a private call.';
-        // if(e.message === message) return;
         showComponent = true;
       }
       if (showComponent) {
