@@ -1,5 +1,6 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
-  let api = null;
+  let api = messageTemplate = captionTimer = null;
+  let captions = [];
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si'
   let jitsiApiUrl = kiwi.state.setting('conference.jitsiApiUrl') || 'https://' + jitsiDomain + '/external_api.min.js'
 
@@ -47,17 +48,19 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
 
   // The component that gets shown in the messagelist when somebody joins a conference call
   const joinCallMessageComponent = kiwi.Vue.extend({
-    template:`<div style="width:100%; padding: 20px; background: #ccc; text-align: center; color: #000; font-size: 2em;">
-      <i aria-hidden="true" class="fa fa-phone"></i>
-      {{caption}}
-      <button @click="showCams()">Join now!</button>
+    template:`<div style="width:100%; padding: 20px; background: #221; text-align: center; color: #ffe; font-size: 2em; line-height: 1.1em;">
+      <div v-for="(caption, idx) in captions" :key="caption">
+        {{caption}}<br>
+        <span style="font-size:.5em;" v-if="idx === captions.length-1 && caption.indexOf('is inviting you to a private call.') === -1">the above users have joined the conference.</span>
+      </div>
+      <button @click="showCams()" style="font-size: 1.5em; border-radius: 5px; background: #afa;"><i aria-hidden="true" class="fa fa-phone"></i> Join now!</button>
     </div>`,
     props: [
       'message',
       'buffer',
     ],
     data() {
-      return { caption: '' };
+      return { captions: captions };
     },
     methods: {
       showCams: showCams,
@@ -70,17 +73,27 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     let nick = '';
     if (newMessage.tags && typeof newMessage.tags['+kiwiirc.com/conference'] !== 'undefined' && newMessage.tags['+kiwiirc.com/conference']) {
       nick = newMessage.nick;
+      if (captionTimer === null || Date.now() - captionTimer > 30000){
+        messageTemplate = newMessage;
+        captions = [];
+      } else {
+        newMessage.template = kiwi.Vue.extend({template: null});
+      }
+      captionTimer = Date.now();
       if (buffer.isChannel()) {
-        message = 'has joined the conference.';
+        message = '';
         showComponent = true;
       } else {
-        message = 'is inviting you to a private call.';
+        message = ' is inviting you to a private call.';
         showComponent = true;
       }
       if (showComponent) {
-        newMessage.template = joinCallMessageComponent.extend({
+        messageTemplate.template = joinCallMessageComponent.extend({
           data() {
-            return { caption: nick + ' ' +  message };
+            return { captions: captions };
+          },
+          mounted() {
+            this.captions.push(nick + message)
           }
         });
       }
@@ -172,7 +185,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
 
   function hideCams(){
     api.dispose();
-    api = false;
+    api = null;
     kiwi.emit('mediaviewer.hide');
   }
 
