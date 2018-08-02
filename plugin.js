@@ -73,8 +73,10 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     let message = '';
     let nick = '';
     if (newMessage.tags && newMessage.tags['+kiwiirc.com/conference']) {
+      let netId = window.kiwi.state.getNetworkFromAddress(newMessage.tags['+kiwiirc.com/network']).id;
+      console.log(window.kiwi.state.getNetworkFromAddress('irc.freenode.net'));
       nick = newMessage.nick;
-      let b = kiwi.state.getBufferByName(parseInt(newMessage.tags['+kiwiirc.com/network']), newMessage.tags['+kiwiirc.com/conference']);
+      let b = kiwi.state.getBufferByName(netId, newMessage.tags['+kiwiirc.com/conference']);
       if(buffer.isChannel()) {
         let bufferMessages = b.getMessages();
         for(let i = bufferMessages.length; i--; ) {
@@ -147,7 +149,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     }
 
     m.tags['+kiwiirc.com/conference'] = buffer.name;
-    m.tags['+kiwiirc.com/network'] = network.id;
+    m.tags['+kiwiirc.com/network'] = network.connection.server;
     network.ircClient.raw(m);
 
     // Get the JWT token from the network
@@ -210,4 +212,8 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     let room = serverAddr + '/' + roomName;
     return room.split('').map(c => c.charCodeAt(0).toString(16)).join('');
   }
+
+  kiwi.on('mediaviewer.hide', () => {
+    hideCams();
+  });
 });
