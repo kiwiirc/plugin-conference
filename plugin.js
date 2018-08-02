@@ -74,7 +74,6 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     let nick = '';
     if (newMessage.tags && newMessage.tags['+kiwiirc.com/conference']) {
       let netId = window.kiwi.state.getNetworkFromAddress(newMessage.tags['+kiwiirc.com/network']).id;
-      console.log(window.kiwi.state.getNetworkFromAddress('irc.freenode.net'));
       nick = newMessage.nick;
       let b = kiwi.state.getBufferByName(netId, newMessage.tags['+kiwiirc.com/conference']);
       if(buffer.isChannel()) {
