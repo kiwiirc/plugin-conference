@@ -1,5 +1,5 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
-  let api = messageTemplate = null;
+  let api = token = messageTemplate = null;
   let captionTimer = [];
   let captions = [];
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si'
@@ -151,17 +151,26 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     m.tags['+kiwiirc.com/network'] = network.connection.server;
     network.ircClient.raw(m);
 
-    // Get the JWT token from the network
-    kiwi.once('irc.raw.EXTJWT', function(command, message) {
-      let token = message.params[1]
-      let options = {
-          roomName: encodeRoomName(network.connection.server, roomName),
-          displayName: buffer.name,
-          parentNode: jitsiBody,
-          interfaceConfigOverwrite,
-          configOverwrite
-      }
-
+    let options = {
+        roomName: encodeRoomName(network.connection.server, roomName),
+        displayName: buffer.name,
+        parentNode: jitsiBody,
+        interfaceConfigOverwrite,
+        configOverwrite
+    }
+  
+    if (kiwi.state.setting('conference.secure')) {
+      // Get the JWT token from the network
+      kiwi.once('irc.raw.EXTJWT', function(command, message) {
+        token = message.params[1]
+        loadJitsiScript();
+      });
+      network.ircClient.raw('EXTJWT ' + roomName);
+    } else {
+      loadJitsiScript();
+    }
+    
+    function loadJitsiScript () {
       // Load the jitsi script into the mediaviewer iframe
       let jitsiAPIScript = innerDoc.createElement("script");
       jitsiAPIScript.setAttribute("type", "text/javascript");
@@ -169,8 +178,10 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       jitsiAPIScript.addEventListener("load", function(event){
         if(event.target.nodeName === "SCRIPT"){
           jitsiBody.innerHTML="";
-          options.jwt = token;
-          options.noSsl = false;
+          if(kiwi.state.setting('conference.secure')) {
+            options.jwt = token;
+            options.noSsl = false;
+          }
           api = new iframe.contentWindow.JitsiMeetExternalAPI(jitsiDomain, options);
           api.executeCommand('displayName', network.nick);
           api.on('videoConferenceLeft', () => {
@@ -179,9 +190,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
         }
       });
       innerHead.appendChild(jitsiAPIScript);
-    });
-
-    network.ircClient.raw('EXTJWT ' + roomName);
+    }
   }
 
   function prepareJitsiIframe() {

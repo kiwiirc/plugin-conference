@@ -22,13 +22,16 @@ Add the plugin javascript file to your kiwiirc `config.json` and configure the s
 		}
 	],
 	"conference": {
-		"server": "meet.jit.si"
+		"server": "meet.jit.si",
+                "secure": false
 	}
 }
 ```
 
 ### Security note!
 By default, this plugin uses Jisti's public servers. It should be noted that by using these public servers, your conference calls are not secure in that anybody can join them if they can guess the room name.
+
+Note that the "secure" option enables JWT authentication, but will not work on Jitsi's public server.
 
 There is work being done to provide secure conference rooms between IRC channels and private messages.
 
@@ -39,6 +42,7 @@ The defaults are:
 ~~~json
 "conference":{ 
 	"server": "meet.jit.si",
+        "secure": false,
 	"interfaceConfigOverwrite": {
 		"SHOW_JITSI_WATERMARK": false,
 		"SHOW_WATERMARK_FOR_GUESTS": false,
