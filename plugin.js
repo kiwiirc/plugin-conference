@@ -132,7 +132,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
 
     let roomName;
     let m = null;
-    if(!network.isChannelName(buffer.name)){ // cam is being invoked in PM, not a channel
+    if (buffer.isQuery()){ // cam is being invoked in PM, not a channel
       let nicks = [];
       nicks.push(network.nick);
       nicks.push(buffer.name);
