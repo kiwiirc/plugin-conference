@@ -1,7 +1,7 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
   let api = token = null;
   let captionTimer = [];
-  let captions = [];
+  let captions = Object.create(null);
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si'
   let jitsiApiUrl = kiwi.state.setting('conference.jitsiApiUrl') || 'https://' + jitsiDomain + '/external_api.min.js'
   const groupedNoticesTTL = 30000;
