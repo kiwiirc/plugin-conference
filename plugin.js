@@ -1,9 +1,10 @@
 kiwi.plugin('conferencePlugin', function(kiwi, log) {
-  let api = token = messageTemplate = null;
+  let api = token = null;
   let captionTimer = [];
   let captions = [];
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si'
   let jitsiApiUrl = kiwi.state.setting('conference.jitsiApiUrl') || 'https://' + jitsiDomain + '/external_api.min.js'
+  const groupedNoticesTTL = 30000;
 
   // Load any jitsi UI config settings
   let interfaceConfigOverwriteFromConfig = kiwi.state.setting('conference.interfaceConfigOverwrite') || {}
@@ -70,6 +71,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
 
   kiwi.on('message.new', function (newMessage, buffer) {
     let showComponent = false;
+    let messageTemplate = null;
     let message = '';
     let nick = '';
     if (newMessage.tags && newMessage.tags['+kiwiirc.com/conference']) {
@@ -84,7 +86,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
         }
       }
       let timerKey = window.kiwi.state.getActiveNetwork().name + buffer.name;
-      if (typeof captionTimer[timerKey] === 'undefined' || Date.now() - captionTimer[timerKey] > 30000 || buffer.isQuery()){
+      if (typeof captionTimer[timerKey] === 'undefined' || Date.now() - captionTimer[timerKey] > groupedNoticesTTL || buffer.isQuery()){
         messageTemplate = newMessage;
         captions[timerKey] = [];
       } else {
