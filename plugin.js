@@ -143,7 +143,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' has joined the conference.');
     }
 
-    m.tags['+kiwiirc.com/conference'] = buffer.name;
+    m.tags['+kiwiirc.com/conference'] = 1;
     network.ircClient.raw(m);
 
     let options = {
