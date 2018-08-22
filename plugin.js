@@ -83,14 +83,14 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
           }
         }
       }
-      let CTIDX = newMessage.tags['+kiwiirc.com/conference'];
-      if (typeof captionTimer[CTIDX] === 'undefined' || Date.now() - captionTimer[CTIDX] > 30000 || buffer.isQuery()){
+      let timerKey = window.kiwi.state.getActiveNetwork().name + buffer.name;
+      if (typeof captionTimer[timerKey] === 'undefined' || Date.now() - captionTimer[timerKey] > 30000 || buffer.isQuery()){
         messageTemplate = newMessage;
-        captions[CTIDX] = [];
+        captions[timerKey] = [];
       } else {
         newMessage.template = kiwi.Vue.extend({template: null});
       }
-      captionTimer[CTIDX] = Date.now();
+      captionTimer[timerKey] = Date.now();
       if (buffer.isChannel()) {
         message = '';
         showComponent = true;
@@ -98,13 +98,13 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
         message = ' is inviting you to a private call.';
         showComponent = true;
       }
-      captions[CTIDX].push(nick + message);
-      if(captions[CTIDX].length === 1) {
+      captions[timerKey].push(nick + message);
+      if(captions[timerKey].length === 1) {
         if (showComponent) {
           messageTemplate.template = joinCallMessageComponent.extend({
             data() {
               return {
-                captions: captions[CTIDX]
+                captions: captions[timerKey]
               };
             },
           });
