@@ -73,11 +73,9 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     let message = '';
     let nick = '';
     if (newMessage.tags && newMessage.tags['+kiwiirc.com/conference']) {
-      let netId = window.kiwi.state.getNetworkFromAddress(newMessage.tags['+kiwiirc.com/network']).id;
       nick = newMessage.nick;
-      let b = kiwi.state.getBufferByName(netId, newMessage.tags['+kiwiirc.com/conference']);
       if(buffer.isChannel()) {
-        let bufferMessages = b.getMessages();
+        let bufferMessages = buffer.getMessages();
         for(let i = bufferMessages.length; i--; ) {
           if (bufferMessages[i].tags && bufferMessages[i].tags['+kiwiirc.com/conference']) {
             messageTemplate = bufferMessages[i];
@@ -85,7 +83,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
           }
         }
       }
-      let CTIDX = newMessage.tags['+kiwiirc.com/network'] + newMessage.tags['+kiwiirc.com/conference'];
+      let CTIDX = newMessage.tags['+kiwiirc.com/conference'];
       if (typeof captionTimer[CTIDX] === 'undefined' || Date.now() - captionTimer[CTIDX] > 30000 || buffer.isQuery()){
         messageTemplate = newMessage;
         captions[CTIDX] = [];
@@ -139,16 +137,13 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       nicks.sort();
       nicks[0] = 'query-' + nicks[0] + '#';
       roomName = nicks.join('');
-      // buffer.say('is inviting you to a private call.', {type: 'action'});
       m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' is inviting you to a private call.');
     }else{
       roomName = buffer.name;
-      // buffer.say('has joined the conference.', {type: 'action'});
       m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' has joined the conference.');
     }
 
     m.tags['+kiwiirc.com/conference'] = buffer.name;
-    m.tags['+kiwiirc.com/network'] = network.connection.server;
     network.ircClient.raw(m);
 
     let options = {
