@@ -7,6 +7,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
   // captions holds the actual message data that is displayed upon conference joins
   let captions = [];
   let kiwiConferenceTag = '1';
+  let sharedData = { isOpen: false };
   const groupedNoticesTTL = 30000;
 
   // Load any jitsi UI config settings
@@ -36,9 +37,8 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
 
   // Add the call button to the channel+query headers
   const conferencingTool = document.createElement('div');
-  conferencingTool.style.marginLeft = '10px';
   conferencingTool.style.cursor = 'pointer';
-  conferencingTool.innerHTML = '<i aria-hidden="true" class="fa fa-phone"></i>';
+  conferencingTool.innerHTML = '<a> <i style="padding-left: 10px;" aria-hidden="true" class="fa fa-phone"></i></a>';
   kiwi.addUi('header_channel', conferencingTool);
   kiwi.addUi('header_query', conferencingTool);
   conferencingTool.onclick = (e) => {
@@ -57,7 +57,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         {{caption}}<span v-if="captions.length > 1 && idx < captions.length - 1">,&nbsp;</span>
         <span style="font-size:.6em;" v-if="idx === captions.length-1 && caption.indexOf('is inviting you to a private call.') === -1"> ha<span v-if="captions.length > 1">ve</span><span v-else>s</span> joined the conference.</span>
       </div>
-      <div @click="showCams()" style="margin-top:10px;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> Join now!</div>
+      <div v-if="!sharedData.isOpen" @click="showCams()" style="margin-top:10px;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> Join now!</div>
     </div>`,
     props: [
       'message',
@@ -116,6 +116,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
             data() {
               return {
                 captions: captions[timerKey],
+                sharedData: sharedData,
               };
             },
           });
@@ -125,6 +126,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
   });
 
   function showCams() {
+    sharedData.isOpen = true;
     kiwi.emit('mediaviewer.show', { iframe: true, url: 'about:blank' });
 
     // Give some time for the mediaviewer to show up in the DOM
@@ -216,6 +218,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
   }
 
   function hideCams() {
+    sharedData.isOpen = false;
     api.dispose();
     api = null;
     kiwi.emit('mediaviewer.hide');
