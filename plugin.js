@@ -1,7 +1,10 @@
-kiwi.plugin('conferencePlugin', function(kiwi, log) {
+kiwi.plugin('conferencePlugin', (kiwi, log) => {
   let api = token = null;
+  // captionTimer holds a per-buffer value to control grouping of join messages
   let captionTimer = [];
+  // captions holds the actual message data that is displayed upon conference joins
   let captions = [];
+  let kiwiConferenceTag = 1;
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si'
   let jitsiApiUrl = kiwi.state.setting('conference.jitsiApiUrl') || 'https://' + jitsiDomain + '/external_api.min.js'
   const groupedNoticesTTL = 30000;
@@ -70,22 +73,22 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
   });
 
   kiwi.on('message.new', function (newMessage, buffer) {
-    let showComponent = false;
     let messageTemplate = null;
     let message = '';
     let nick = '';
-    if (newMessage.tags && newMessage.tags['+kiwiirc.com/conference']) {
+    if (newMessage.tags && newMessage.tags['+kiwiirc.com/conference'] === kiwiConferenceTag) {
       nick = newMessage.nick;
       if(buffer.isChannel()) {
         let bufferMessages = buffer.getMessages();
         for(let i = bufferMessages.length; i--; ) {
-          if (bufferMessages[i].tags && bufferMessages[i].tags['+kiwiirc.com/conference']) {
+          if (bufferMessages[i].tags && bufferMessages[i].tags['+kiwiirc.com/conference'] === kiwiConferenceTag) {
             messageTemplate = bufferMessages[i];
             break;
           }
         }
       }
       let timerKey = window.kiwi.state.getActiveNetwork().name + buffer.name;
+      // if this is the first join message in groupedNoticesTTL milliseconds, or is a private message, inject a new in-call component
       if (typeof captionTimer[timerKey] === 'undefined' || Date.now() - captionTimer[timerKey] > groupedNoticesTTL || buffer.isQuery()){
         messageTemplate = newMessage;
         captions[timerKey] = [];
@@ -93,24 +96,22 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
         newMessage.template = kiwi.Vue.extend({template: null});
       }
       captionTimer[timerKey] = Date.now();
+      // if this is a channel join (not a PM), then just display the nick. Otherwise show the message below.
       if (buffer.isChannel()) {
         message = '';
-        showComponent = true;
       } else {
         message = ' is inviting you to a private call.';
-        showComponent = true;
       }
       captions[timerKey].push(nick + message);
+      // only inject a new vue component if this is the first join message in groupedNoticesTTL milliseconds
       if(captions[timerKey].length === 1) {
-        if (showComponent) {
-          messageTemplate.template = joinCallMessageComponent.extend({
-            data() {
-              return {
-                captions: captions[timerKey]
-              };
-            },
-          });
-        }
+        messageTemplate.template = joinCallMessageComponent.extend({
+          data() {
+            return {
+              captions: captions[timerKey]
+            };
+          },
+        });
       }
     }
   });
@@ -130,7 +131,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
     let network = window.kiwi.state.getActiveNetwork();
     let buffer = window.kiwi.state.getActiveBuffer();
 
-    let roomName;
+    let roomName = '';
     let m = null;
     if(!network.isChannelName(buffer.name)){ // cam is being invoked in PM, not a channel
       let nicks = [];
@@ -145,7 +146,7 @@ kiwi.plugin('conferencePlugin', function(kiwi, log) {
       m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' has joined the conference.');
     }
 
-    m.tags['+kiwiirc.com/conference'] = 1;
+    m.tags['+kiwiirc.com/conference'] = kiwiConferenceTag;
     network.ircClient.raw(m);
 
     let options = {
