@@ -71,10 +71,6 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     },
   });
 
-  const emptyMessageComponent = kiwi.Vue.extend({
-    template: ``,
-  });
-
   kiwi.on('message.new', (newMessage, buffer) => {
     let messageTemplate = null;
     let message = '';
