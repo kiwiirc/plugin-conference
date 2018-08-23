@@ -7,8 +7,6 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
   // captions holds the actual message data that is displayed upon conference joins
   let captions = [];
   let kiwiConferenceTag = '1';
-  let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si';
-  let jitsiApiUrl = kiwi.state.setting('conference.jitsiApiUrl') || 'https://' + jitsiDomain + '/external_api.min.js';
   const groupedNoticesTTL = 30000;
 
   // Load any jitsi UI config settings
@@ -55,11 +53,11 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
   // The component that gets shown in the messagelist when somebody joins a conference call
   const joinCallMessageComponent = kiwi.Vue.extend({
     template: `<div style="width:100%; padding: 20px; background: #123; text-align: center; color: #ffe; font-size: 2em; line-height: 1.1em;">
-      <div v-for="(caption, idx) in captions" :key="caption">
-        {{caption}}<br>
-        <span style="font-size:.6em;" v-if="idx === captions.length-1 && caption.indexOf('is inviting you to a private call.') === -1">the above users have joined the conference.</span>
+      <div v-for="(caption, idx) in captions" :key="caption" style="display: inline-block">
+        {{caption}}<span v-if="captions.length > 1 && idx < captions.length - 1">,&nbsp;</span>
+        <span style="font-size:.6em;" v-if="idx === captions.length-1 && caption.indexOf('is inviting you to a private call.') === -1"> ha<span v-if="captions.length > 1">ve</span><span v-else>s</span> joined the conference.</span>
       </div>
-      <button @click="showCams()" style="font-size: 1.4em; border-radius: 5px; background: #8ca; margin-top:10px;"><i aria-hidden="true" class="fa fa-phone"></i> Join now!</button>
+      <div @click="showCams()" style="margin-top:10px;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> Join now!</div>
     </div>`,
     props: [
       'message',
@@ -71,6 +69,10 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     methods: {
       showCams: showCams,
     },
+  });
+
+  const emptyMessageComponent = kiwi.Vue.extend({
+    template: ``,
   });
 
   kiwi.on('message.new', (newMessage, buffer) => {
@@ -105,23 +107,26 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
       } else {
         message = ' is inviting you to a private call.';
       }
-      captions[timerKey].push(nick + message);
-      // only inject a new vue component if this is the first
-      // join message in groupedNoticesTTL milliseconds
-      if (captions[timerKey].length === 1) {
-        messageTemplate.template = joinCallMessageComponent.extend({
-          data() {
-            return {
-              captions: captions[timerKey],
-            };
-          },
-        });
+      if (!captions[timerKey].includes(nick + message)) {
+        captions[timerKey].push(nick + message);
+        // only inject a new vue component if this is the first
+        // join message in groupedNoticesTTL milliseconds
+        if (captions[timerKey].length === 1) {
+          messageTemplate.template = joinCallMessageComponent.extend({
+            data() {
+              return {
+                captions: captions[timerKey],
+              };
+            },
+          });
+        }
       }
     }
   });
 
   function showCams() {
     kiwi.emit('mediaviewer.show', { iframe: true, url: 'about:blank' });
+
     // Give some time for the mediaviewer to show up in the DOM
     setTimeout(loadJitsi, 10);
   }
@@ -173,6 +178,8 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
 
     function loadJitsiScript() {
       // Load the jitsi script into the mediaviewer iframe
+      let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si';
+      let jitsiApiUrl = kiwi.state.setting('conference.jitsiApiUrl') || 'https://' + jitsiDomain + '/external_api.min.js';
       let jitsiAPIScript = innerDoc.createElement('script');
       jitsiAPIScript.setAttribute('type', 'text/javascript');
       jitsiAPIScript.setAttribute('src', jitsiApiUrl);
