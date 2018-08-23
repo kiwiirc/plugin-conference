@@ -6,7 +6,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
   let captionTimer = [];
   // captions holds the actual message data that is displayed upon conference joins
   let captions = [];
-  let kiwiConferenceTag = 1;
+  let kiwiConferenceTag = '1';
   let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si';
   let jitsiApiUrl = kiwi.state.setting('conference.jitsiApiUrl') || 'https://' + jitsiDomain + '/external_api.min.js';
   const groupedNoticesTTL = 30000;
