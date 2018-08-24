@@ -1,4 +1,54 @@
 /* eslint-disable vue/html-indent */
+/* eslint-disable no-bitwise */
+/* eslint-disable no-restricted-globals */
+/* eslint-disable no-extend-native */
+import platform from 'platform';
+
+if (platform.name === 'IE') {
+  // polyfill for includes
+  // https://tc39.github.io/ecma262/#sec-array.prototype.includes
+  if (!Array.prototype.includes) {
+    Object.defineProperty(Array.prototype, 'includes', {
+      value: function(searchElement, fromIndex) { // eslint-disable-line
+        if (this == null) {
+          throw new TypeError('"this" is null or not defined');
+        }
+        // 1. Let O be ? ToObject(this value).
+        let o = Object(this);
+        // 2. Let len be ? ToLength(? Get(O, "length")).
+        let len = o.length >>> 0;
+        // 3. If len is 0, return false.
+        if (len === 0) {
+          return false;
+        }
+        // 4. Let n be ? ToInteger(fromIndex).
+        //    (If fromIndex is undefined, this step produces the value 0.)
+        let n = fromIndex | 0;
+
+        // 5. If n ≥ 0, then
+        //  a. Let k be n.
+        // 6. Else n < 0,
+        //  a. Let k be len + n.
+        //  b. If k < 0, let k be 0.
+        let k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+        let sameValueZero = (x, y) => x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
+        // 7. Repeat, while k < len
+        while (k < len) {
+          // a. Let elementK be the result of ? Get(O, ! ToString(k)).
+          // b. If SameValueZero(searchElement, elementK) is true, return true.
+          if (sameValueZero(o[k], searchElement)) {
+            return true;
+          }
+          // c. Increase k by 1.
+          k++;
+        }
+        // 8. Return false
+        return false;
+      },
+    });
+  }
+}
+
 kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef */
   let api = null;
   let token = null;
@@ -52,13 +102,15 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
 
   // The component that gets shown in the messagelist when somebody joins a conference call
   const joinCallMessageComponent = kiwi.Vue.extend({
-    template: `<div style="width:100%; padding: 20px; background: #123; text-align: center; color: #ffe; font-size: 2em; line-height: 1.1em;">
-      <div v-for="(caption, idx) in captions" :key="caption" style="display: inline-block">
-        {{caption}}<span v-if="captions.length > 1 && idx < captions.length - 1">,&nbsp;</span>
-        <span style="font-size:.6em;" v-if="idx === captions.length-1 && caption.indexOf('is inviting you to a private call.') === -1"> ha<span v-if="captions.length > 1">ve</span><span v-else>s</span> joined the conference.</span>
+    template: `
+      <div style="width:100%; padding: 20px; background: #123; text-align: center; color: #ffe; font-size: 2em; line-height: 1.1em;">
+        <div v-for="(caption, idx) in captions" :key="caption" style="display: inline-block">
+          {{caption}}<span v-if="captions.length > 1 && idx < captions.length - 1">,&nbsp;</span>
+          <span style="font-size:.6em;" v-if="idx === captions.length-1 && caption.indexOf('is inviting you to a private call.') === -1"> ha<span v-if="captions.length > 1">ve</span><span v-else>s</span> joined the conference.</span>
+        </div>
+        <div v-if="!sharedData.isOpen" @click="showCams()" style="margin-top:10px;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> Join now!</div>
       </div>
-      <div v-if="!sharedData.isOpen" @click="showCams()" style="margin-top:10px;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> Join now!</div>
-    </div>`,
+    `,
     props: [
       'message',
       'buffer',
@@ -175,6 +227,13 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     }
 
     function loadJitsiScript() {
+      if (platform.name === 'IE') {
+        jitsiBody.style.height = '100vh';
+        jitsiBody.style.background = '#666';
+        jitsiBody.innerHTML = `<div style="font-size:16px;text-align:center;width:50%;margin-left:25%;margin-top:25vh;font-family:arial,tahoma;background:#311;color:#fcc;padding:25px;border-radius:5px;">
+                               This browser is not supported.<br>Please update your browser.</div>`;
+        return;
+      }
       // Load the jitsi script into the mediaviewer iframe
       let jitsiDomain = kiwi.state.setting('conference.server') || 'meet.jit.si';
       let jitsiApiUrl = kiwi.state.setting('conference.jitsiApiUrl') || 'https://' + jitsiDomain + '/external_api.min.js';
@@ -195,6 +254,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
           });
         }
       });
+
       innerHead.appendChild(jitsiAPIScript);
     }
   }
@@ -215,8 +275,10 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
 
   function hideCams() {
     sharedData.isOpen = false;
-    api.dispose();
-    api = null;
+    if (api) {
+      api.dispose();
+      api = null;
+    }
     kiwi.emit('mediaviewer.hide');
   }
 
@@ -228,6 +290,6 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
   }
 
   kiwi.on('mediaviewer.hide', () => {
-    hideCams();
+    if (api) hideCams();
   });
 });
