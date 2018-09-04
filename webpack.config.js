@@ -10,14 +10,14 @@ module.exports = {
       exclude: /node_modules/,
       loader: 'babel-loader',
       query: {
-        presets: ['es2015'],
-      },
-    }],
+        presets: ['@babel/preset-env'],
+      }
+    }]
   },
   devtool: 'source-map',
   devServer: {
-    contentBase: path.join(__dirname, 'dist'),
-    compress: true,
-    host: '0.0.0.0',
-  },
+      contentBase: path.join(__dirname, "dist"),
+      compress: true,
+      host: "0.0.0.0"
+  }
 };
