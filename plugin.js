@@ -66,8 +66,8 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     SHOW_JITSI_WATERMARK: false,
     SHOW_WATERMARK_FOR_GUESTS: false,
     TOOLBAR_BUTTONS: [
-      'microphone', 'camera', 'fullscreen', 'fodeviceselection', 'hangup',
-      'settings', 'videoquality', 'filmstrip',
+      'microphone', 'camera', 'fullscreen', 'hangup',
+      'settings', 'videoquality', 'filmstrip', 'fodeviceselection',
       'stats', 'shortcuts',
     ],
   };
@@ -103,12 +103,12 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
   // The component that gets shown in the messagelist when somebody joins a conference call
   const joinCallMessageComponent = kiwi.Vue.extend({
     template: `
-      <div style="width:100%; padding: 20px; background: #123; text-align: center; color: #ffe; font-size: 2em; line-height: 1.1em;">
+      <div style="width:100%; padding: 20px; background: #3338; text-align: center; color: #ffe; font-size: 1.05em; line-height: 1.05em;">
         <div v-for="(caption, idx) in captions" :key="caption" style="display: inline-block">
-          {{caption}}<span v-if="captions.length > 1 && idx < captions.length - 1">,&nbsp;</span>
-          <span style="font-size:.6em;" v-if="idx === captions.length-1 && caption.indexOf('is inviting you to a private call.') === -1"> ha<span v-if="captions.length > 1">ve</span><span v-else>s</span> joined the conference.</span>
+          <b>{{caption}}</b><span v-if="captions.length > 1 && idx < captions.length - 1">,&nbsp;</span>
+          <span v-if="idx === captions.length-1 && caption.indexOf('is inviting you to a private call.') === -1"> ha<span v-if="captions.length > 1">ve</span><span v-else>s</span> joined the conference.</span>
         </div>
-        <div v-if="!sharedData.isOpen" @click="showCams()" style="margin-top:10px;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> Join now!</div>
+        <div v-if="!sharedData.isOpen" @click="showCams()" style="background: #bca; color: #000; margin-top: 0px;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> Join now!</div>
       </div>
     `,
     props: [
@@ -290,6 +290,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
   }
 
   kiwi.on('mediaviewer.hide', () => {
+    sharedData.isOpen = false;
     if (api) hideCams();
   });
 });
