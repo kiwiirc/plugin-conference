@@ -33,8 +33,6 @@ By default, this plugin uses Jisti's public servers. It should be noted that by 
 
 Note that the "secure" option enables JWT authentication, but will not work on Jitsi's public server.
 
-There is work being done to provide secure conference rooms between IRC channels and private messages.
-
 ### Extra configuration
 Jitsi Meet supports extra configuration to customise its interface and functions. You can configure these via the optional `interfaceConfigOverwrite` and `configOverwrite` config options.
 
@@ -57,8 +55,12 @@ The defaults are:
 }
 ~~~
   
-more info about Jitsi's options can be found in the docs
-(https://github.com/jitsi/jitsi-meet/blob/master/doc/quick-install.md)
+more info about Jitsi's options can be found in these files:
+* https://github.com/jitsi/jitsi-meet/blob/master/interface_config.js
+* https://github.com/jitsi/jitsi-meet/blob/master/config.js
+
+### Running your own conference server
+Running your own conference server allows you to secure your conference rooms. We make use of the Jitsi Meet server to handle the conference calls, the installation steps can be found here: https://github.com/jitsi/jitsi-meet/blob/master/doc/quick-install.md
 
 ## License
 
