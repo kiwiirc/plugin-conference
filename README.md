@@ -1,7 +1,5 @@
 # KiwiIRC - Audio / Video conferencing
 
-### Status - in development
-
 This plugin integrates the [Jitsi Meet](https://jitsi.org/jitsi-meet/) conference software into KiwiIRC. 
 
 Features -
@@ -9,6 +7,13 @@ Features -
 * Video, audio, or both, directly within Kiwi IRC itself
 * Continue using Kiwi IRC and other channels without dropping the conference call
 * Channel operators automatically promoted to conference room moderators
+
+### Building
+~~~shell
+yarn build
+~~~
+
+Copy `dist/main.js` to your Kiwi plugins folder
 
 ### Loading the plugin into Kiwi IRC
 Add the plugin javascript file to your kiwiirc `config.json` and configure the settings:
