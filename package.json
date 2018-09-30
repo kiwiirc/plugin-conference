@@ -1,7 +1,7 @@
 {
 	"name": "fileuploader-kiwiirc-plugin",
 	"version": "0.1.0",
-	"main": "plugin.js",
+	"main": "plugin-conference.js",
 	"license": "UNLICENSED",
 	"private": true,
 	"scripts": {
