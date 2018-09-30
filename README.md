@@ -28,7 +28,9 @@ Add the plugin javascript file to your kiwiirc `config.json` and configure the s
 	],
 	"conference": {
 		"server": "meet.jit.si",
-                "secure": false
+                "secure": false,
+                "enableQuery": true,
+                "enableChannel": true
 	}
 }
 ```

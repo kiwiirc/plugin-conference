@@ -89,8 +89,12 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
   const conferencingTool = document.createElement('div');
   conferencingTool.style.cursor = 'pointer';
   conferencingTool.innerHTML = '<a> <i style="padding-left: 10px;" aria-hidden="true" class="fa fa-phone"></i></a>';
-  kiwi.addUi('header_channel', conferencingTool);
-  kiwi.addUi('header_query', conferencingTool);
+  if (kiwi.state.setting('conference.enableChannel') == true) {
+    kiwi.addUi('header_channel', conferencingTool);
+  }
+  if (kiwi.state.setting('conference.enableQuery') == true) {  
+    kiwi.addUi('header_query', conferencingTool);
+  }
   conferencingTool.onclick = (e) => {
     e.preventDefault();
     if (api) {
