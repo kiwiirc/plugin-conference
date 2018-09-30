@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = {
   mode: 'development',
-  entry: './plugin.js',
+  entry: './conference.js',
   module: {
     rules: [{
       test: /\.js$/,

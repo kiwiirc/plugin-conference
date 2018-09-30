@@ -23,7 +23,7 @@ Add the plugin javascript file to your kiwiirc `config.json` and configure the s
 	"plugins": [
 		{
 			"name": "conference",
-			"url": "static/plugins/conference/main.js"
+			"url": "static/plugins/plugin-conference/dist/main.js"
 		}
 	],
 	"conference": {
