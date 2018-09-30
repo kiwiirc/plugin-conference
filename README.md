@@ -10,7 +10,7 @@ Features -
 
 ### Building
 ~~~shell
-yarn build
+yarn && yarn build
 ~~~
 
 Copy `dist/main.js` to your Kiwi plugins folder
