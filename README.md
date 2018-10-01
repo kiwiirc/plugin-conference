@@ -20,16 +20,16 @@ Add the plugin javascript file to your kiwiirc `config.json` and configure the s
 
 ```json
 {
-	"plugins": [
-		{
-			"name": "conference",
-			"url": "static/plugins/plugin-conference/dist/plugin-conference.min.js"
-		}
-	],
-	"conference": {
-		"server": "meet.jit.si",
-                "secure": false
-	}
+    "plugins": [
+        {
+            "name": "conference",
+            "url": "static/plugins/plugin-conference/dist/plugin-conference.min.js"
+        }
+    ],
+    "conference": {
+        "server": "meet.jit.si",
+        "secure": false
+    }
 }
 ```
 
@@ -44,19 +44,19 @@ Jitsi Meet supports extra configuration to customise its interface and functions
 The defaults are:
 ~~~json
 "conference":{ 
-	"server": "meet.jit.si",
-        "secure": false,
-	"interfaceConfigOverwrite": {
-		"SHOW_JITSI_WATERMARK": false,
-		"SHOW_WATERMARK_FOR_GUESTS": false,
-		"TOOLBAR_BUTTONS": [
-			"microphone", "camera", "fullscreen", "fodeviceselection", "hangup",
-			"settings", "videoquality", "filmstrip",
-			"stats", "shortcuts"
-		]
-	},
-	"configOverwrite": {
-	}
+    "server": "meet.jit.si",
+    "secure": false,
+    interfaceConfigOverwrite": {
+        "SHOW_JITSI_WATERMARK": false,
+        "SHOW_WATERMARK_FOR_GUESTS": false,
+        "TOOLBAR_BUTTONS": [
+            "microphone", "camera", "fullscreen", "fodeviceselection", "hangup",
+            "settings", "videoquality", "filmstrip",
+            "stats", "shortcuts"
+        ]
+    },
+    "configOverwrite": {
+    }
 }
 ~~~
   
