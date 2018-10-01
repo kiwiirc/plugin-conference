@@ -28,9 +28,7 @@ Add the plugin javascript file to your kiwiirc `config.json` and configure the s
 	],
 	"conference": {
 		"server": "meet.jit.si",
-		"secure": false,
-		"queries": true,
-		"channels": true
+		"secure": false
 	}
 }
 ```
@@ -47,7 +45,7 @@ The defaults are:
 ~~~json
 "conference":{ 
 	"server": "meet.jit.si",
-        "secure": false,
+	"secure": false,
 	"interfaceConfigOverwrite": {
 		"SHOW_JITSI_WATERMARK": false,
 		"SHOW_WATERMARK_FOR_GUESTS": false,
@@ -62,10 +60,17 @@ The defaults are:
 }
 ~~~
   
-more info about Jitsi's options can be found in these files:
+More info about Jitsi's options can be found in these files:
 * https://github.com/jitsi/jitsi-meet/blob/master/interface_config.js
 * https://github.com/jitsi/jitsi-meet/blob/master/config.js
 
+You may also choose to hide the conference call icon in either channels or private messages:
+```json
+{
+	"channels": false,
+	"queries": false
+}
+```
 ### Running your own conference server
 Running your own conference server allows you to secure your conference rooms. We make use of the Jitsi Meet server to handle the conference calls, the installation steps can be found here: https://github.com/jitsi/jitsi-meet/blob/master/doc/quick-install.md
 
