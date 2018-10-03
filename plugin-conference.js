@@ -264,8 +264,10 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     }
 
     function prepareJitsiIframe() {
-        let iframe = document.querySelector('.kiwi-mediaviewer iframe');
-        let mediaviewer = document.querySelector('.kiwi-mediaviewer');
+        let iframes = document.querySelectorAll('.kiwi-mediaviewer-iframe');
+        let iframe = iframes[iframes.length - 1];
+        let mediaviewers = document.querySelectorAll('.kiwi-mediaviewer');
+        let mediaviewer = mediaviewers[mediaviewers.length - 1];
         let innerDoc = iframe.contentDocument || iframe.contentWindow.document;
         let jitsiDiv = innerDoc.getElementsByTagName('body')[0];
 
