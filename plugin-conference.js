@@ -253,9 +253,9 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                     }
                     api = new iframe.contentWindow.JitsiMeetExternalAPI(jitsiDomain, options);
                     api.executeCommand('displayName', network.nick);
-                    api.on('videoConferenceLeft', () => {
-                        hideCams();
-                    });
+                    //api.on('videoConferenceLeft', () => {
+                    //    hideCams();
+                    //});
                 }
             });
 
@@ -271,9 +271,15 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         let innerDoc = iframe.contentDocument || iframe.contentWindow.document;
         let jitsiDiv = innerDoc.getElementsByTagName('body')[0];
 
+        innerDoc.domain = document.domain;
+        setTimeout(() => {
+            let jitsiIframe = innerDoc.getElementById('jitsiConferenceFrame0');
+            let innerInnerDoc = jitsiIframe.contentDocument || jitsiIframe.contentWindow.document;
+            innerInnerDoc.domain = document.domain;
+        }, 2000);
         jitsiDiv.style.margin = 0;
         iframe.style.width = '100%';
-        mediaviewer.style.height = 'calc(100% - 50px)';
+        mediaviewer.style.height = '40%';
         mediaviewer.style.overflow = 'hidden';
         iframe.style.height = '100%';
 
