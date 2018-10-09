@@ -253,9 +253,9 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                     }
                     api = new iframe.contentWindow.JitsiMeetExternalAPI(jitsiDomain, options);
                     api.executeCommand('displayName', network.nick);
-                    //api.on('videoConferenceLeft', () => {
-                    //    hideCams();
-                    //});
+                    api.on('videoConferenceLeft', () => {
+                        hideCams();
+                    });
                 }
             });
 
