@@ -271,13 +271,15 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         let innerDoc = iframe.contentDocument || iframe.contentWindow.document;
         let jitsiDiv = innerDoc.getElementsByTagName('body')[0];
 
+        /*
         innerDoc.domain = document.domain;
         setTimeout(() => {
             let jitsiIframe = innerDoc.getElementById('jitsiConferenceFrame0');
-            // let innerInnerDoc = jitsiIframe.contentDocument || jitsiIframe.contentWindow.document;
-            // innerInnerDoc.domain = document.domain;
+            let innerInnerDoc = jitsiIframe.contentDocument || jitsiIframe.contentWindow.document;
+            innerInnerDoc.domain = document.domain;
             iframe.src = jitsiIframe.src;
         }, 1000);
+        */
         jitsiDiv.style.margin = 0;
         iframe.style.width = '100%';
         mediaviewer.style.height = '40%';
