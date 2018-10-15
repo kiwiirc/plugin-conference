@@ -2,7 +2,7 @@
 	"name": "conference-kiwiirc-plugin",
 	"version": "1.0.0",
 	"main": "plugin-conference.js",
-	"license": "UNLICENSED",
+	"license": "Apache",
 	"private": true,
 	"scripts": {
 		"build": "webpack",
