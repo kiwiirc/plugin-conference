@@ -256,6 +256,19 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                     api.on('videoConferenceLeft', () => {
                         hideCams();
                     });
+                    api.on('videoConferenceJoined', () => {
+                        let overlayDiv = document.createElement('div');
+                        overlayDiv.style.position = 'fixed';
+                        overlayDiv.style.zIndex = '10';
+                        overlayDiv.style.top = '0';
+                        overlayDiv.style.background = '#3336';
+                        overlayDiv.style.fontFamily = 'arial, tahoma';
+                        overlayDiv.style.color = '#fff';
+                        overlayDiv.style.padding = '10px';
+                        overlayDiv.innerHTML = roomName + ' @ ' + network.name;
+                        jitsiBody.appendChild(overlayDiv);
+
+                    });
                 }
             });
 
@@ -281,6 +294,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     }
 
     function hideCams() {
+        if(sharedData.isOpen && !confirm('Close current conference?')) return;
         sharedData.isOpen = false;
         if (api) {
             api.dispose();
