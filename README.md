@@ -46,6 +46,8 @@ The defaults are:
 "conference":{ 
     "server": "meet.jit.si",
     "secure": false,
+    "joinText": "has joined the conference",
+    "inviteText": "is inviting you to a private call.",
     "interfaceConfigOverwrite": {
         "SHOW_JITSI_WATERMARK": false,
         "SHOW_WATERMARK_FOR_GUESTS": false,

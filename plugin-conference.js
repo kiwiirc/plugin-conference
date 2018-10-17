@@ -58,7 +58,21 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     let captions = [];
     let kiwiConferenceTag = '1';
     let sharedData = { isOpen: false };
+    let inviteText = '';
+    let joinText = '';
     const groupedNoticesTTL = 30000;
+
+    if(kiwi.state.setting('conference.inviteText')) {
+        inviteText = ' ' + kiwi.state.setting('conference.inviteText');
+    } else {
+        inviteText = ' is inviting you to a private call.';
+    }
+
+    if(kiwi.state.setting('conference.joinText')) {
+        joinText = kiwi.state.setting('conference.joinText');
+    } else {
+        joinText = 'has joined the conference.';
+    }
 
     // Load any jitsi UI config settings
     let interfaceConfigOverwriteFromConfig = kiwi.state.setting('conference.interfaceConfigOverwrite') || {};
@@ -110,7 +124,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
             <div style="width:100%; padding: 20px; background: #3338; text-align: center; color: #ffe; font-size: 1.05em; line-height: 1.05em;">
                 <div v-for="(caption, idx) in captions" :key="caption" style="display: inline-block">
                     <b>{{caption}}</b><span v-if="captions.length > 1 && idx < captions.length - 1">,&nbsp;</span>
-                    <span v-if="idx === captions.length-1 && caption.indexOf('is inviting you to a private call.') === -1"> ha<span v-if="captions.length > 1">ve</span><span v-else>s</span> joined the conference.</span>
+                    <span v-if="idx === captions.length-1 && caption.indexOf('${inviteText}') === -1"> ${joinText}</span>
                 </div>
                 <div v-if="!sharedData.isOpen" @click="showCams()" style="background: #bca; color: #000;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> Join now!</div>
             </div>
@@ -157,7 +171,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
             if (buffer.isChannel()) {
                 message = '';
             } else {
-                message = ' is inviting you to a private call.';
+                message = inviteText;
             }
             if (!captions[timerKey].includes(nick + message)) {
                 captions[timerKey].push(nick + message);
@@ -202,10 +216,10 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
             nicks.sort();
             nicks[0] = 'query-' + nicks[0] + '#';
             roomName = nicks.join('');
-            m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' is inviting you to a private call.');
+            m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' ' + inviteText);
         } else {
             roomName = buffer.name;
-            m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' has joined the conference.');
+            m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' ' + joinText);
         }
 
         m.tags['+kiwiirc.com/conference'] = kiwiConferenceTag;
