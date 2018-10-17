@@ -98,7 +98,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     conferencingTool.onclick = (e) => {
         e.preventDefault();
         if (api) {
-            hideCams();
+            hideCams(true);
         } else {
             showCams();
         }
@@ -254,7 +254,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                     api = new iframe.contentWindow.JitsiMeetExternalAPI(jitsiDomain, options);
                     api.executeCommand('displayName', network.nick);
                     api.on('videoConferenceLeft', () => {
-                        hideCams();
+                        hideCams(false);
                     });
                     api.on('videoConferenceJoined', () => {
                         let overlayDiv = document.createElement('div');
@@ -293,9 +293,8 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         return iframe;
     }
 
-    function hideCams() {
-        if(sharedData.isOpen && !confirm('Close current conference?')) return;
-        sharedData.isOpen = false;
+    function hideCams(confirmClose) {
+        if(confirmClose && !confirm('Close current conference?')) return;
         if (api) {
             api.dispose();
             api = null;
@@ -312,6 +311,6 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
 
     kiwi.on('mediaviewer.hide', () => {
         sharedData.isOpen = false;
-        if (api) hideCams();
+        if (api) hideCams(false);
     });
 });
