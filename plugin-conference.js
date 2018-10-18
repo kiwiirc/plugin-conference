@@ -60,6 +60,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     let sharedData = { isOpen: false };
     let inviteText = '';
     let joinText = '';
+    let joinButtonText = '';
     const groupedNoticesTTL = 30000;
 
     if(kiwi.state.setting('conference.inviteText')) {
@@ -72,6 +73,12 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         joinText = kiwi.state.setting('conference.joinText');
     } else {
         joinText = 'has joined the conference.';
+    }
+
+    if(kiwi.state.setting('conference.joinButtonText')) {
+        joinButtonText = kiwi.state.setting('conference.joinButtonText');
+    } else {
+        joinButtonText = 'Join now!';
     }
 
     // Load any jitsi UI config settings
@@ -126,7 +133,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                     <b>{{caption}}</b><span v-if="captions.length > 1 && idx < captions.length - 1">,&nbsp;</span>
                     <span v-if="idx === captions.length-1 && caption.indexOf('${inviteText}') === -1"> ${joinText}</span>
                 </div>
-                <div v-if="!sharedData.isOpen" @click="showCams()" style="background: #bca; color: #000;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> Join now!</div>
+                <div v-if="!sharedData.isOpen" @click="showCams()" style="background: #bca; color: #000;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> ${joinButtonText}</div>
             </div>
         `,
         props: [

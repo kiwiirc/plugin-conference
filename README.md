@@ -48,6 +48,7 @@ The defaults are:
     "secure": false,
     "joinText": "has joined the conference",
     "inviteText": "is inviting you to a private call.",
+    "joinButtonText": "Join now!",
     "interfaceConfigOverwrite": {
         "SHOW_JITSI_WATERMARK": false,
         "SHOW_WATERMARK_FOR_GUESTS": false,
