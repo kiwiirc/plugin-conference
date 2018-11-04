@@ -3,7 +3,7 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable no-extend-native */
 import platform from 'platform';
-    
+
 if (platform.name === 'IE') {
     // polyfill for includes
     // https://tc39.github.io/ecma262/#sec-array.prototype.includes
@@ -109,11 +109,11 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     // Add the call button to the channel+query headers
     const conferencingTool = document.createElement('div');
     conferencingTool.style.cursor = 'pointer';
-    conferencingTool.innerHTML = '<a> <i style="padding-left: 10px;" aria-hidden="true" class="fa fa-phone"></i></a>';
+    conferencingTool.innerHTML = '<a><i aria-hidden="true" class="fa fa-phone"></i></a>';
     if (kiwi.state.setting('conference.channels') !== false) {
         kiwi.addUi('header_channel', conferencingTool);
     }
-    if (kiwi.state.setting('conference.queries') !== false) {    
+    if (kiwi.state.setting('conference.queries') !== false) {
         kiwi.addUi('header_query', conferencingTool);
     }
     conferencingTool.onclick = (e) => {
