@@ -119,7 +119,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     conferencingTool.onclick = (e) => {
         e.preventDefault();
         if (api) {
-            hideCams();
+            hideCams(true);
         } else {
             showCams();
         }
@@ -275,7 +275,20 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                     api = new iframe.contentWindow.JitsiMeetExternalAPI(jitsiDomain, options);
                     api.executeCommand('displayName', network.nick);
                     api.on('videoConferenceLeft', () => {
-                        hideCams();
+                        hideCams(false);
+                    });
+                    api.on('videoConferenceJoined', () => {
+                        let overlayDiv = document.createElement('div');
+                        overlayDiv.style.position = 'fixed';
+                        overlayDiv.style.zIndex = '10';
+                        overlayDiv.style.top = '0';
+                        overlayDiv.style.background = '#3336';
+                        overlayDiv.style.fontFamily = 'arial, tahoma';
+                        overlayDiv.style.color = '#fff';
+                        overlayDiv.style.padding = '10px';
+                        overlayDiv.innerHTML = roomName + ' @ ' + network.name;
+                        jitsiBody.appendChild(overlayDiv);
+
                     });
                 }
             });
@@ -301,8 +314,8 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         return iframe;
     }
 
-    function hideCams() {
-        sharedData.isOpen = false;
+    function hideCams(confirmClose) {
+        if(confirmClose && !confirm('Close current conference?')) return;
         if (api) {
             api.dispose();
             api = null;
@@ -319,6 +332,6 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
 
     kiwi.on('mediaviewer.hide', () => {
         sharedData.isOpen = false;
-        if (api) hideCams();
+        if (api) hideCams(false);
     });
 });
