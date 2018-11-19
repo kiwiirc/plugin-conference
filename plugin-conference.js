@@ -58,10 +58,16 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     let captions = [];
     let kiwiConferenceTag = '1';
     let sharedData = { isOpen: false };
+    let enabledInChannels = [ '*' ];
     let inviteText = '';
     let joinText = '';
     let joinButtonText = '';
+    let disabledText = '';
     const groupedNoticesTTL = 30000;
+
+    if(kiwi.state.setting('conference.enabledInChannels')) {
+        enabledInChannels = kiwi.state.setting('conference.enabledInChannels');
+    }
 
     if(kiwi.state.setting('conference.inviteText')) {
         inviteText = ' ' + kiwi.state.setting('conference.inviteText');
@@ -79,6 +85,12 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         joinButtonText = kiwi.state.setting('conference.joinButtonText');
     } else {
         joinButtonText = 'Join now!';
+    }
+
+    if(kiwi.state.setting('conference.disabledText')) {
+        disabledText = kiwi.state.setting('conference.disabledText');
+    } else {
+        disabledText = 'Sorry. The sysop has not enabled conferences in this channel.';
     }
 
     // Load any jitsi UI config settings
@@ -226,7 +238,13 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
             m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' ' + inviteText);
         } else {
             roomName = buffer.name;
-            m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' ' + joinText);
+            if(enabledInChannels.indexOf('*') !== -1 || enabledInChannels.indexOf(roomName) !== -1) {
+                m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' ' + joinText);
+            } else {
+                hideCams(false);
+                alert(disabledText);
+                return;
+            }
         }
 
         m.tags['+kiwiirc.com/conference'] = kiwiConferenceTag;
