@@ -46,9 +46,11 @@ The defaults are:
 "conference":{ 
     "server": "meet.jit.si",
     "secure": false,
+    "enabledInChannels": [ '*' ],
     "joinText": "has joined the conference",
     "inviteText": "is inviting you to a private call.",
     "joinButtonText": "Join now!",
+    "disabledText": "Sorry. The sysop has not enabled conferences in this channel.",
     "interfaceConfigOverwrite": {
         "SHOW_JITSI_WATERMARK": false,
         "SHOW_WATERMARK_FOR_GUESTS": false,
