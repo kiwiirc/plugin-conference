@@ -46,7 +46,7 @@ The defaults are:
 "conference":{ 
     "server": "meet.jit.si",
     "secure": false,
-    "enabledInChannels": [ '*' ],
+    "enabledInChannels": [ "*" ],
     "joinText": "has joined the conference",
     "inviteText": "is inviting you to a private call.",
     "joinButtonText": "Join now!",
