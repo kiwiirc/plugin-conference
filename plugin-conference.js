@@ -63,6 +63,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     let joinText = '';
     let joinButtonText = '';
     let disabledText = '';
+    let linkText = '';
     const groupedNoticesTTL = 30000;
 
     if(kiwi.state.setting('conference.enabledInChannels')) {
@@ -91,6 +92,12 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         disabledText = kiwi.state.setting('conference.disabledText');
     } else {
         disabledText = 'Sorry. The sysop has not enabled conferences in this channel.';
+    }
+
+    if(kiwi.state.setting('conference.linkText')) {
+        linkText = kiwi.state.setting('conference.linkText');
+    } else {
+        linkText = 'link';
     }
 
     // Load any jitsi UI config settings
@@ -146,6 +153,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                     <span v-if="idx === captions.length-1 && caption.indexOf('${inviteText}') === -1"> ${joinText}</span>
                 </div>
                 <div v-if="!sharedData.isOpen" @click="showCams()" style="background: #bca; color: #000;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> ${joinButtonText}</div>
+                <a v-if="!secure" :href="shareLink" class="" target="_blank"> ({{ linkText }})</a>
             </div>
         `,
         props: [
@@ -153,11 +161,34 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
             'buffer',
         ],
         data() {
-            return { captions: null };
+            return {
+                captions: null,
+                secure: kiwi.state.setting('conference.secure'),
+                server: kiwi.state.setting('conference.server') || 'meet.jit.si',
+                linkText
+            };
         },
         methods: {
             showCams: showCams,
         },
+        computed: {
+            shareLink() {
+                let network = window.kiwi.state.getActiveNetwork();
+                let buffer = window.kiwi.state.getActiveBuffer();
+                let roomName = '';
+                if (buffer.isQuery()) { // cam is being invoked in PM, not a channel
+                    let nicks = [];
+                    nicks.push(network.nick);
+                    nicks.push(buffer.name);
+                    nicks.sort();
+                    nicks[0] = 'query-' + nicks[0] + '#';
+                    roomName = nicks.join('');
+                } else {
+                    roomName = buffer.name;
+                }
+                return '//' + this.server + '/' + encodeRoomName(network.connection.server, roomName);
+            }
+        }
     });
 
     kiwi.on('message.new', (newMessage, buffer) => {

@@ -51,6 +51,7 @@ The defaults are:
     "inviteText": "is inviting you to a private call.",
     "joinButtonText": "Join now!",
     "disabledText": "Sorry. The sysop has not enabled conferences in this channel.",
+    "linkText": "link",
     "interfaceConfigOverwrite": {
         "SHOW_JITSI_WATERMARK": false,
         "SHOW_WATERMARK_FOR_GUESTS": false,
