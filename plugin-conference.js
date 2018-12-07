@@ -257,6 +257,14 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         let network = window.kiwi.state.getActiveNetwork();
         let buffer = window.kiwi.state.getActiveBuffer();
 
+        let loadingAnimation = document.createElement('div');
+        loadingAnimation.style.position = 'absolute';
+        loadingAnimation.style.top = '34%';
+        loadingAnimation.style.marginLeft = '45%';
+        loadingAnimation.innerHTML  = '<i class="fa fa-spin fa-spinner" aria-hidden="true" style="font-size: 100px;"/>';
+        let mediaViewer = document.querySelectorAll('.kiwi-mediaviewer')[0];
+        mediaViewer.appendChild(loadingAnimation);
+
         let roomName = '';
         let m = null;
         if (buffer.isQuery()) { // cam is being invoked in PM, not a channel
@@ -327,6 +335,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                         hideCams(false);
                     });
                     api.on('videoConferenceJoined', () => {
+                        mediaViewer.removeChild(loadingAnimation);
                         let overlayDiv = document.createElement('div');
                         overlayDiv.style.position = 'fixed';
                         overlayDiv.style.zIndex = '10';
