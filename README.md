@@ -53,7 +53,7 @@ The defaults are:
     "disabledText": "Sorry. The sysop has not enabled conferences in this channel.",
     "showLink": true,
     "useBitlyLink": false,
-    "bitlyAccessToken": "7896f9ec15166afda93b68115087c16e14d57015",
+    "bitlyAccessToken": "BITLY_API_KEY_HERE",
     "interfaceConfigOverwrite": {
         "SHOW_JITSI_WATERMARK": false,
         "SHOW_WATERMARK_FOR_GUESTS": false,

@@ -112,7 +112,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     if (kiwi.state.setting('conference.bitlyAccessToken')) {
         bitlyAccessToken = kiwi.state.setting('conference.bitlyAccessToken');
     } else {
-        bitlyAccessToken = '7896f9ec15166afda93b68115087c16e14d57015';
+        bitlyAccessToken = '';
     }
 
     // Load any jitsi UI config settings
