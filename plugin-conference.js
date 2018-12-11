@@ -58,7 +58,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     let captions = [];
     let kiwiConferenceTag = '1';
     let sharedData = { isOpen: false };
-    let enabledInChannels = [ '*' ];
+    let enabledInChannels = ['*'];
     let inviteText = '';
     let joinText = '';
     let joinButtonText = '';
@@ -66,35 +66,35 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     let linkText = '';
     const groupedNoticesTTL = 30000;
 
-    if(kiwi.state.setting('conference.enabledInChannels')) {
+    if (kiwi.state.setting('conference.enabledInChannels')) {
         enabledInChannels = kiwi.state.setting('conference.enabledInChannels');
     }
 
-    if(kiwi.state.setting('conference.inviteText')) {
+    if (kiwi.state.setting('conference.inviteText')) {
         inviteText = ' ' + kiwi.state.setting('conference.inviteText');
     } else {
         inviteText = ' is inviting you to a private call.';
     }
 
-    if(kiwi.state.setting('conference.joinText')) {
+    if (kiwi.state.setting('conference.joinText')) {
         joinText = kiwi.state.setting('conference.joinText');
     } else {
         joinText = 'has joined the conference.';
     }
 
-    if(kiwi.state.setting('conference.joinButtonText')) {
+    if (kiwi.state.setting('conference.joinButtonText')) {
         joinButtonText = kiwi.state.setting('conference.joinButtonText');
     } else {
         joinButtonText = 'Join now!';
     }
 
-    if(kiwi.state.setting('conference.disabledText')) {
+    if (kiwi.state.setting('conference.disabledText')) {
         disabledText = kiwi.state.setting('conference.disabledText');
     } else {
         disabledText = 'Sorry. The sysop has not enabled conferences in this channel.';
     }
 
-    if(kiwi.state.setting('conference.linkText')) {
+    if (kiwi.state.setting('conference.linkText')) {
         linkText = kiwi.state.setting('conference.linkText');
     } else {
         linkText = 'link';
@@ -165,7 +165,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                 captions: null,
                 secure: kiwi.state.setting('conference.secure'),
                 server: kiwi.state.setting('conference.server') || 'meet.jit.si',
-                linkText
+                linkText,
             };
         },
         methods: {
@@ -187,8 +187,8 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                     roomName = buffer.name;
                 }
                 return '//' + this.server + '/' + encodeRoomName(network.connection.server, roomName);
-            }
-        }
+            },
+        },
     });
 
     kiwi.on('message.new', (newMessage, buffer) => {
@@ -261,7 +261,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         loadingAnimation.style.position = 'absolute';
         loadingAnimation.style.top = '34%';
         loadingAnimation.style.marginLeft = '45%';
-        loadingAnimation.innerHTML  = '<i class="fa fa-spin fa-spinner" aria-hidden="true" style="font-size: 100px;"/>';
+        loadingAnimation.innerHTML = '<i class="fa fa-spin fa-spinner" aria-hidden="true" style="font-size: 100px;"/>';
         let mediaViewer = document.querySelectorAll('.kiwi-mediaviewer')[0];
         mediaViewer.appendChild(loadingAnimation);
 
@@ -277,11 +277,11 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
             m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' ' + inviteText);
         } else {
             roomName = buffer.name;
-            if(enabledInChannels.indexOf('*') !== -1 || enabledInChannels.indexOf(roomName) !== -1) {
+            if (enabledInChannels.indexOf('*') !== -1 || enabledInChannels.indexOf(roomName) !== -1) {
                 m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' ' + joinText);
             } else {
                 hideCams(false);
-                alert(disabledText);
+                alert(disabledText); // eslint-disable-line no-alert
                 return;
             }
         }
@@ -346,7 +346,6 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                         overlayDiv.style.padding = '10px';
                         overlayDiv.innerHTML = roomName + ' @ ' + network.name;
                         jitsiBody.appendChild(overlayDiv);
-
                     });
                 }
             });
@@ -373,7 +372,9 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     }
 
     function hideCams(confirmClose) {
-        if(confirmClose && !confirm('Close current conference?')) return;
+        if (confirmClose && !confirm('Close current conference?')) { // eslint-disable-line no-alert
+            return;
+        }
         if (api) {
             api.dispose();
             api = null;

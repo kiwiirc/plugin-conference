@@ -25,7 +25,7 @@ module.exports = {
         'import/no-extraneous-dependencies': 0,
         'import/no-unresolved': 0,
         'import/prefer-default-export': 0,
-        'indent': ['error', 2],
+        'indent': ['error', 4],
         'no-continue': 0,
         'no-multi-assign': 0,
         'no-param-reassign': ['error', { 'props': false }],
