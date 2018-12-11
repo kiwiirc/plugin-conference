@@ -51,7 +51,9 @@ The defaults are:
     "inviteText": "is inviting you to a private call.",
     "joinButtonText": "Join now!",
     "disabledText": "Sorry. The sysop has not enabled conferences in this channel.",
-    "linkText": "link",
+    "showLink": true,
+    "useBitlyLink": false,
+    "bitlyAccessToken": "7896f9ec15166afda93b68115087c16e14d57015",
     "interfaceConfigOverwrite": {
         "SHOW_JITSI_WATERMARK": false,
         "SHOW_WATERMARK_FOR_GUESTS": false,
@@ -65,7 +67,10 @@ The defaults are:
     }
 }
 ~~~
-  
+
+The 'showLink' item, if enabled, will append a direct link to the broadcasted join message which opens the jitsi conference for non-Kiwi users.
+The 'useBitlyLink' item, if enabled (requires showLink to also be enabled), will shorten the link displayed using Bitly's free service. You must sign up for a free Bitly account to use the API (https://bitly.com/). Once registered, follow the instructions to generate an access token, then provide that in Kiwi's config @ "bitlyAccessToken".
+
 More info about Jitsi's options can be found in these files:
 * https://github.com/jitsi/jitsi-meet/blob/master/interface_config.js
 * https://github.com/jitsi/jitsi-meet/blob/master/config.js

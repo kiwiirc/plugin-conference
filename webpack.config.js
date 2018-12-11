@@ -1,9 +1,10 @@
 /* eslint-disable vue/html-indent */
+const regeneratorRuntime = require("regenerator-runtime");
 const path = require('path');
 
 module.exports = {
     mode: 'development',
-    entry: './plugin-conference.js',
+    entry: "./plugin-conference.js",
     output: {
         filename: 'plugin-conference.min.js',
     },
