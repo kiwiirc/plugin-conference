@@ -13,7 +13,7 @@ Features -
 yarn && yarn build
 ~~~
 
-Copy `dist/main.js` to your Kiwi plugins folder
+Copy `dist/plugin-conference.min.js` to your Kiwi plugins folder
 
 ### Loading the plugin into Kiwi IRC
 Add the plugin javascript file to your kiwiirc `config.json` and configure the settings:
