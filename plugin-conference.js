@@ -312,7 +312,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         network.ircClient.raw(m);
 
         let options = {
-            roomName: encodeRoomName(network.connection.server, roomName),
+            roomName: encodeRoomName(network.connection.server === 'irc.irc.com' ? 'irc.snoonet.org' : network.connection.server, roomName),
             displayName: buffer.name,
             parentNode: jitsiBody,
             interfaceConfigOverwrite,
