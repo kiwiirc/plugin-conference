@@ -100,7 +100,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     if (kiwi.state.setting('conference.showLink')) {
         showLink = kiwi.state.setting('conference.showLink');
     } else {
-        showLink = true;
+        showLink = false;
     }
 
     if (kiwi.state.setting('conference.useBitlyLink')) {
