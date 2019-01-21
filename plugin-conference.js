@@ -170,20 +170,15 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                 <div v-if="!sharedData.isOpen" @click="showCams()" style="background: #bca; color: #000;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> ${joinButtonText}</div>
             </div>
         `,
-        props: [
-            'message',
-            'buffer',
-        ],
-        data() {
-            return {
-                captions: null,
-                secure: kiwi.state.setting('conference.secure'),
-                server: kiwi.state.setting('conference.server') || 'meet.jit.si',
-            };
-        },
         methods: {
-            showCams: showCams,
+           showCams,
         },
+        data() {
+           return {
+             captions: null,
+             sharedData,
+           }
+        }
     });
 
     kiwi.on('message.new', (newMessage, buffer) => {
@@ -205,10 +200,13 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
             // if this is the first join message in groupedNoticesTTL milliseconds,
             // or is a private message, inject a new in-call component
             if (typeof captionTimer[timerKey] === 'undefined' || Date.now() - captionTimer[timerKey] > groupedNoticesTTL || buffer.isQuery()) {
+                // if this is the first notice received or groupeNoticesTTL (time to live) has expired...
                 messageTemplate = newMessage;
                 captions[timerKey] = [];
             } else {
-                newMessage.template = kiwi.Vue.extend({ template: null });
+                // else eliminate the incomming message. it does not need to be displayed.
+                newMessage.template = new kiwi.Vue({ template: null });
+                newMessage.template.$mount();
             }
             captionTimer[timerKey] = Date.now();
             // if this is a channel join (not a PM), then just display the nick.
@@ -223,7 +221,8 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                 // only inject a new vue component if this is the first
                 // join message in groupedNoticesTTL milliseconds
                 if (captions[timerKey].length === 1) {
-                    messageTemplate.template = joinCallMessageComponent.extend({
+                    messageTemplate.template = new joinCallMessageComponent({
+                        name: 'custom',
                         data() {
                             return {
                                 captions: captions[timerKey],
@@ -231,6 +230,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                             };
                         },
                     });
+                    messageTemplate.template.$mount();
                 }
             }
         }
