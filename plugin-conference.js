@@ -201,7 +201,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                     }
                 }
             }
-            let timerKey = window.kiwi.state.getActiveNetwork().name + buffer.name;
+            let timerKey = buffer.networkid + buffer.name;
             // if this is the first join message in groupedNoticesTTL milliseconds,
             // or is a private message, inject a new in-call component
             if (typeof captionTimer[timerKey] === 'undefined' || Date.now() - captionTimer[timerKey] > groupedNoticesTTL || buffer.isQuery()) {
