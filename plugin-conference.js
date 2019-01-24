@@ -296,18 +296,18 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
             nicks[0] = 'query-' + nicks[0] + '#';
             roomName = nicks.join('');
             
-            m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' ' + inviteText + ' ' + await shareLink());
+            m = new network.ircClient.Message('PRIVMSG', buffer.name.toLowerCase(), '* ' + network.nick + ' ' + inviteText + ' ' + await shareLink());
         } else {
             roomName = buffer.name;
             if (enabledInChannels.indexOf('*') !== -1 || enabledInChannels.indexOf(roomName) !== -1) {
-                m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' ' + joinText + ' ' + await shareLink());
+                m = new network.ircClient.Message('PRIVMSG', buffer.name.toLowerCase(), '* ' + network.nick + ' ' + joinText + ' ' + await shareLink());
             } else {
                 hideCams(false);
                 alert(disabledText); // eslint-disable-line no-alert
                 return;
             }
         }
-
+        m.prefix = network.nick;
         m.tags['+kiwiirc.com/conference'] = kiwiConferenceTag;
         network.ircClient.raw(m);
 
