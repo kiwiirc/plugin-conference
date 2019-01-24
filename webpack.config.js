@@ -1,6 +1,7 @@
 /* eslint-disable vue/html-indent */
 const regeneratorRuntime = require("regenerator-runtime");
 const path = require('path');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
     mode: 'development',
@@ -18,10 +19,12 @@ module.exports = {
             },
         }],
     },
-    devtool: 'source-map',
     devServer: {
         contentBase: path.join(__dirname, 'dist'),
         compress: true,
         host: '0.0.0.0',
     },
+    plugins: [
+      new UglifyJsPlugin()
+    ]
 };
