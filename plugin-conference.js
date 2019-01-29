@@ -164,8 +164,8 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         template: `
             <div style="width:100%; padding: 20px; background: #3338; text-align: center; color: #ffe; font-size: 1.05em; line-height: 1.05em;">
                 <div v-for="(caption, idx) in captions" :key="caption" style="display: inline-block">
-                    <b>{{caption}}</b><span v-if="captions.length > 1 && idx < captions.length - 1">,&nbsp;</span>
-                    <span v-if="idx === captions.length-1 && caption.indexOf('${inviteText}') === -1"> ${joinText}</span>
+                    <b v-if="!sharedData.isOpen">{{caption}}</b><span v-if="captions.length > 1 && idx < captions.length - 1">,&nbsp;</span>
+                    <span v-if="idx === captions.length-1 && caption.indexOf('${inviteText}') === -1 || sharedData.isOpen"> ${joinText}</span>
                 </div>
                 <div v-if="!sharedData.isOpen" @click="showCams()" style="background: #bca; color: #000;" class="u-button u-button-primary"><i aria-hidden="true" class="fa fa-phone"></i> ${joinButtonText}</div>
             </div>
