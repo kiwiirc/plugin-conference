@@ -282,7 +282,6 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                 req = `${linkShortenerURL}/?${link}`;
                 shortLink = await getShortLink(req);
             }
-            console.log(shortLink);
             return await shortLink;
         } else {
             return link;
