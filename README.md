@@ -52,8 +52,9 @@ The defaults are:
     "joinButtonText": "Join now!",
     "disabledText": "Sorry. The sysop has not enabled conferences in this channel.",
     "showLink": true,
-    "useBitlyLink": false,
-    "bitlyAccessToken": "BITLY_API_KEY_HERE",
+    "useLinkShortener": false,
+    "linkShortenerAPIToken": "API_KEY_HERE",
+    "linkShortenerURL": "",
     "interfaceConfigOverwrite": {
         "SHOW_JITSI_WATERMARK": false,
         "SHOW_WATERMARK_FOR_GUESTS": false,
@@ -69,7 +70,17 @@ The defaults are:
 ~~~
 
 The 'showLink' item, if enabled, will append a direct link to the broadcasted join message which opens the jitsi conference for non-Kiwi users.
-The 'useBitlyLink' item, if enabled (requires showLink to also be enabled), will shorten the link displayed using Bitly's free service. You must sign up for a free Bitly account to use the API (https://bitly.com/). Once registered, follow the instructions to generate an access token, then provide that in Kiwi's config @ "bitlyAccessToken".
+The 'useUseLinkShortener' item, if enabled (requires showLink to also be enabled), will shorten the link displayed using a link shortening service like Bitly. If you like, yout can sign up for a free Bitly account to use the API (https://bitly.com/). Once registered, follow the instructions to generate an access token, then provide that in Kiwi's config @ "linkShortenerAPIToken". Note that some services, like x0.no do not require API tokens, in which case the token can be omitted.
+
+Examples of linkShortenerURL data are:
+
+If using Bitly:
+
+    https://api-ssl.bitly.com/v3/shorten
+
+Alternative shortener that doesn't require an API token:
+
+    https://x0.no/api/
 
 More info about Jitsi's options can be found in these files:
 * https://github.com/jitsi/jitsi-meet/blob/master/interface_config.js

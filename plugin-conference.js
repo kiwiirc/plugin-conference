@@ -65,8 +65,10 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     let joinButtonText = '';
     let disabledText = '';
     let showLink = '';
-    let useBitlyLink = '';
-    let bitlyAccessToken = '';
+    let useLinkShortener = '';
+    let linkShortenerURL = '';
+    let linkShortenerAPIToken = '';
+
     const groupedNoticesTTL = 30000;
 
     if (kiwi.state.setting('conference.enabledInChannels')) {
@@ -103,16 +105,22 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         showLink = false;
     }
 
-    if (kiwi.state.setting('conference.useBitlyLink')) {
-        useBitlyLink = kiwi.state.setting('conference.useBitlyLink');
+    if (kiwi.state.setting('conference.useLinkShortener')) {
+        useLinkShortener = kiwi.state.setting('conference.useLinkShortener');
     } else {
-        useBitlyLink = false;
+        useLinkShortener = false;
     }
 
-    if (kiwi.state.setting('conference.bitlyAccessToken')) {
-        bitlyAccessToken = kiwi.state.setting('conference.bitlyAccessToken');
+    if (kiwi.state.setting('conference.linkShortenerURL')) {
+        linkShortenerURL = kiwi.state.setting('conference.linkShortenerURL');
     } else {
-        bitlyAccessToken = '';
+        linkShortenerURL = '';
+    }
+
+    if (kiwi.state.setting('conference.linkShortenerAPIToken')) {
+        linkShortenerAPIToken = kiwi.state.setting('conference.linkShortenerAPIToken');
+    } else {
+        linkShortenerAPIToken = '';
     }
 
     // Load any jitsi UI config settings
@@ -244,7 +252,9 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         setTimeout(loadJitsi, 10);
     }
 
-    const getBitly = async (url) => await (await (await fetch(url)).json()).data.url;
+    const getBitlyShortLink = async (url) => await (await (await fetch(url)).json()).data.url;
+
+    const getShortLink = async (url) => await (await (await fetch('https://cors-anywhere.herokuapp.com/' + url, {headers: new Headers({'origin': url.split('//')[1].split('/')[0]})})).text());
 
     async function shareLink() {
         if (!showLink) return '';
@@ -262,9 +272,18 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
             roomName = buffer.name;
         }
         let link = location.protocol + '//' +  kiwi.state.setting('conference.server') + '/' + encodeRoomName(network.connection.server, roomName);
-        if (useBitlyLink) {
-            let req = `https://api-ssl.bitly.com/v3/shorten?access_token=${bitlyAccessToken}&longUrl=${link}`;
-            return await getBitly(req);
+        if (useLinkShortener) {
+            let req;
+            let shortLink;
+            if (linkShortenerURL.indexOf('api-ssl.bily.com') !== -1) {
+                req = `${linkShortenerURL}?access_token=${linkShortenerAPIToken}&longUrl=${link}`;
+                shortLink = await getBitlyShortLink(req);
+            } else {
+                req = `${linkShortenerURL}/?${link}`;
+                shortLink = await getShortLink(req);
+            }
+            console.log(shortLink);
+            return await shortLink;
         } else {
             return link;
         }
