@@ -275,7 +275,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         if (useLinkShortener) {
             let req;
             let shortLink;
-            if (linkShortenerURL.indexOf('api-ssl.bily.com') !== -1) {
+            if (linkShortenerURL.indexOf('api-ssl.bitly.com') !== -1) {
                 req = `${linkShortenerURL}?access_token=${linkShortenerAPIToken}&longUrl=${link}`;
                 shortLink = await getBitlyShortLink(req);
             } else {
