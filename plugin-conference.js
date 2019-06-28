@@ -70,8 +70,30 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     let linkShortenerAPIToken = '';
 
     const groupedNoticesTTL = 30000;
+    
+    if (kiwi.state.setting('conference.enabledInChannelsJsonUrl')) {
 
-    if (kiwi.state.setting('conference.enabledInChannels')) {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onload = function onLoad(temp) {
+            if (xmlhttp.status !== 200) {
+                console.error('plugin-conference: error loading enabled channels list');
+                return
+            }
+            try {
+                var json = JSON.parse(xmlhttp.responseText);
+                if (!json) {
+                    return;
+                }
+                if (json.length > 0) {
+                    enabledInChannels = json;
+                }
+            } catch (err) {
+                console.error('plugin-conference: error parsing enabled channels list:', err);
+            }
+        }
+        xmlhttp.open('GET', kiwi.state.setting('conference.enabledInChannelsJsonUrl'), true);
+        xmlhttp.send();
+    } else if (kiwi.state.setting('conference.enabledInChannels')) {
         enabledInChannels = kiwi.state.setting('conference.enabledInChannels');
     }
 
