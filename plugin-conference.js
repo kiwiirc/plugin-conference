@@ -59,6 +59,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     let captions = [];
     let kiwiConferenceTag = '1';
     let sharedData = { isOpen: false };
+    let enabledNotifyInChannels = ['*'];
     let enabledInChannels = ['*'];
     let inviteText = '';
     let joinText = '';
@@ -93,8 +94,10 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
         }
         xmlhttp.open('GET', kiwi.state.setting('conference.enabledInChannelsJsonUrl'), true);
         xmlhttp.send();
-    } else if (kiwi.state.setting('conference.enabledInChannels')) {
-        enabledInChannels = kiwi.state.setting('conference.enabledInChannels');
+    }
+    
+    if (kiwi.state.setting('conference.enabledNotifyInChannels')) {
+        enabledNotifyInChannels = kiwi.state.setting('conference.enabledNotifyInChannels');
     }
 
     if (kiwi.state.setting('conference.inviteText')) {
@@ -171,9 +174,30 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
     });
 
     // Add the call button to the channel+query headers
-    const conferencingTool = document.createElement('div');
-    conferencingTool.style.cursor = 'pointer';
-    conferencingTool.innerHTML = '<a><i aria-hidden="true" class="fa fa-phone"></i></a>';
+
+    var button = new kiwi.Vue({
+        template: '<div><a v-if="allowed"><i aria-hidden="true" class="fa fa-phone"></i></a></div>',
+        data: function(){
+            return {
+                allowed:true,
+            }
+        }
+    });
+    button.$mount();
+    let conferencingTool = button.$el;
+    
+    if (enabledInChannels.indexOf('*') !== -1) {
+        kiwi.state.$watch('ui.active_buffer', function(newVal){
+            if(enabledInChannels.indexOf(kiwi.state.getActiveBuffer().name) > -1) {
+                button.allowed = true;
+            } else {
+                button.allowed = false;
+            }
+            if(kiwi.state.getActiveBuffer().isQuery()) { 
+                button.allowed = true; 
+            }
+        });
+    }
     if (kiwi.state.setting('conference.channels') !== false) {
         kiwi.addUi('header_channel', conferencingTool);
     }
@@ -210,7 +234,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
            }
         }
     });
-
+    
     kiwi.on('message.new', (newMessage, buffer) => {
         let messageTemplate = null;
         let message = '';
@@ -339,7 +363,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
             m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' ' + inviteText + ' ' + await shareLink());
         } else {
             roomName = buffer.name;
-            if (enabledInChannels.indexOf('*') !== -1 || enabledInChannels.indexOf(roomName) !== -1) {
+            if (enabledNotifyInChannels.indexOf('*') !== -1 || enabledNotifyInChannels.indexOf(roomName) !== -1) {
                 m = new network.ircClient.Message('PRIVMSG', buffer.name, '* ' + network.nick + ' ' + joinText + ' ' + await shareLink());
             } else {
                 hideCams(false);
