@@ -72,7 +72,7 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
 
     const groupedNoticesTTL = 30000;
     
-    if (kiwi.state.setting('conference.enabledInChannelsJsonUrl')) {
+    if (kiwi.state.setting('conference.enabledInChannelsJson')) {
 
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onload = function onLoad(temp) {
@@ -92,8 +92,10 @@ kiwi.plugin('conferencePlugin', (kiwi, log) => { /* eslint-disable-line no-undef
                 console.error('plugin-conference: error parsing enabled channels list:', err);
             }
         }
-        xmlhttp.open('GET', kiwi.state.setting('conference.enabledInChannelsJsonUrl'), true);
+        xmlhttp.open('GET', kiwi.state.setting('conference.enabledInChannelsJson'), true);
         xmlhttp.send();
+    } else {
+        enabledInChannels = kiwi.state.setting('conference.enabledInChannels');
     }
     
     if (kiwi.state.setting('conference.enabledNotifyInChannels')) {
