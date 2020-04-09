@@ -1,6 +1,6 @@
 # KiwiIRC - Audio / Video conferencing
 
-This plugin integrates the [Jitsi Meet](https://jitsi.org/jitsi-meet/) conference software into KiwiIRC. 
+This plugin integrates the [Jitsi Meet](https://jitsi.org/jitsi-meet/) conference software into KiwiIRC.
 
 Features -
 * Individual conference rooms for channels and private messages
@@ -13,7 +13,7 @@ Features -
 yarn && yarn build
 ~~~
 
-Copy `dist/plugin-conference.min.js` to your Kiwi plugins folder
+Copy `dist/plugin-conference.js` to your Kiwi plugins folder
 
 ### Loading the plugin into Kiwi IRC
 Add the plugin javascript file to your kiwiirc `config.json` and configure the settings:
@@ -23,7 +23,7 @@ Add the plugin javascript file to your kiwiirc `config.json` and configure the s
     "plugins": [
         {
             "name": "conference",
-            "url": "static/plugins/plugin-conference/dist/plugin-conference.min.js"
+            "url": "static/plugins/plugin-conference/dist/plugin-conference.js"
         }
     ],
     "conference": {
@@ -43,29 +43,35 @@ Jitsi Meet supports extra configuration to customise its interface and functions
 
 The defaults are:
 ~~~json
-"conference":{ 
-    "server": "meet.jit.si",
+"plugin-conference": {
     "secure": false,
-    "enabledInChannels": [ "*" ],
-    "joinText": "has joined the conference",
-    "inviteText": "is inviting you to a private call.",
+    "server": "meet.jit.si",
+    "queries": true,
+    "channels": true,
+    "enabledInChannels": ["*"],
+    "groupInvitesTTL": 30000,
+    "maxParticipantsLength": 60,
+    "participantsMore": "more...",
+    "inviteText": "{{ nick }} is inviting you to a private call.",
+    "joinText": "{{ nick }} has joined the conference.",
     "joinButtonText": "Join now!",
-    "disabledText": "Sorry. The sysop has not enabled conferences in this channel.",
-    "showLink": true,
+    "showLink": false,
     "useLinkShortener": false,
+    "linkShortenerURL": "https://x0.no/api/?{{ link }}",
     "linkShortenerAPIToken": "API_KEY_HERE",
-    "linkShortenerURL": "",
     "interfaceConfigOverwrite": {
         "SHOW_JITSI_WATERMARK": false,
         "SHOW_WATERMARK_FOR_GUESTS": false,
         "TOOLBAR_BUTTONS": [
-            "microphone", "camera", "fullscreen", "fodeviceselection", "hangup",
-            "settings", "videoquality", "filmstrip",
-            "stats", "shortcuts"
-        ]
+            "microphone", "camera", "fullscreen", "hangup",
+            "settings", "videoquality", "filmstrip", "fodeviceselection",
+            "stats", "shortcuts",
+        ],
     },
     "configOverwrite": {
-    }
+        "startWithVideoMuted": true,
+        "startWithAudioMuted": true,
+    },
 }
 ~~~
 
@@ -76,11 +82,13 @@ Examples of linkShortenerURL data are:
 
 If using Bitly:
 
-    https://api-ssl.bitly.com/v3/shorten
+    `https://api-ssl.bitly.com/v3/shorten`
 
 Alternative shortener that doesn't require an API token:
 
-    https://x0.no/api/
+    `https://x0.no/api/?{{ link }}`
+
+note: for link shorteners other than Bitly `{{ link }}` is replaced with the conference url and the response is read from the body
 
 More info about Jitsi's options can be found in these files:
 * https://github.com/jitsi/jitsi-meet/blob/master/interface_config.js
