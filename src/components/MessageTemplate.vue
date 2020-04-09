@@ -38,7 +38,7 @@ export default {
                 let nick = this.inviteState.members[i];
                 length += nick.length;
                 if (length > maxLength) {
-                    showNicks.push('more...');
+                    showNicks.push(config.setting('participantsMore'));
                     break;
                 }
                 showNicks.push(nick);
