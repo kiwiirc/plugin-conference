@@ -26,7 +26,7 @@ Add the plugin javascript file to your kiwiirc `config.json` and configure the s
             "url": "static/plugins/plugin-conference/dist/plugin-conference.js"
         }
     ],
-    "conference": {
+    "plugin-conference": {
         "server": "meet.jit.si",
         "secure": false
     }
