@@ -97,11 +97,14 @@ export default {
             this.$el.appendChild(scr);
         },
         scriptLoaded() {
+            let configOverwrite = config.setting('configOverwrite');
+            configOverwrite.prejoinPageEnabled = false;
+
             let domain = config.setting('server');
             let options = {
                 roomName: this.encodedRoomName,
                 parentNode: this.$el,
-                configOverwrite: config.setting('configOverwrite'),
+                configOverwrite: configOverwrite,
                 interfaceConfigOverwrite: config.setting('interfaceConfigOverwrite'),
             };
 
