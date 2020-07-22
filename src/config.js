@@ -41,7 +41,7 @@ export function setDefaults() {
             let targetName = target.join('.');
             if (typeof val === 'object' && !_.isArray(val)) {
                 walkConfig(val, target);
-            } else if (!getSetting(targetName)) {
+            } else if (typeof getSetting(targetName) === 'undefined') {
                 setSetting(targetName, val);
             }
         });
