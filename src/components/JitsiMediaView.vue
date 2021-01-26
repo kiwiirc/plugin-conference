@@ -71,8 +71,11 @@ export default {
             this.scriptLoad();
         }
 
-        let mediaviewer = this.$el.parentElement;
-        mediaviewer.style.height = '40%';
+        // MediaViewer also sets a height on mounted()
+        // and is called after this mounted()
+        this.$nextTick(() => {
+            this.$parent.setHeight('40%');
+        });
     },
     beforeDestroy() {
         this.componentProps.pluginState.isActive = false;
