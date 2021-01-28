@@ -8,6 +8,7 @@ let defaultConfig = {
     server: 'meet.jit.si',
     queries: true,
     channels: true,
+    viewHeight: '40%',
     enabledInChannels: ['*'],
     groupInvitesTTL: 30000,
     maxParticipantsLength: 60,

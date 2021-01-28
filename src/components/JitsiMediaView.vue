@@ -74,7 +74,7 @@ export default {
         // MediaViewer also sets a height on mounted()
         // and is called after this mounted()
         this.$nextTick(() => {
-            this.$parent.setHeight('40%');
+            this.$parent.setHeight(config.setting('viewHeight'));
         });
     },
     beforeDestroy() {
