@@ -49,10 +49,10 @@ export default {
             return config.setting('joinButtonText');
         },
         inviteText() {
-            return config.setting('inviteText').replace('{{ nick }}', this.nicks);
+            return config.setting('inviteText').replace('{{ nick }}', this.nicks.join(', '));
         },
         joinText() {
-            return config.setting('joinText').replace('{{ nick }}', this.nicks);
+            return config.setting('joinText').replace('{{ nick }}', this.nicks.join(', '));
         },
     },
     methods: {
