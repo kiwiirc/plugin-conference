@@ -1,7 +1,7 @@
 /* global kiwi:true */
 /* global _:true */
 
-let configBase = 'plugin-conference';
+let configBase = 'conference';
 let defaultConfig = {
     tagID: 1,
     secure: false,
