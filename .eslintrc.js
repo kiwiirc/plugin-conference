@@ -6,13 +6,17 @@ module.exports = {
     },
     extends: [
         'airbnb-base',
+        'plugin:vue/recommended',
         'standard'
     ],
     env: {
         'browser': true,
     },
+    plugins: [
+        'vue',
+    ],
     // add your custom rules here
-    'rules': {
+    rules: {
         'class-methods-use-this': 0,
         'comma-dangle': ['error', {
             'arrays': 'always-multiline',
@@ -37,10 +41,13 @@ module.exports = {
         'operator-linebreak': 0,
         'prefer-const': 0,
         'prefer-destructuring': 0,
+        'prefer-object-spread': 0,
         'prefer-template': 0,
         'semi': ['error', 'always'],
         'space-before-function-paren': ['error', 'never'],
         'vue/html-indent': ['error', 4],
         'vue/max-attributes-per-line': 0,
+        'vue/require-prop-types': 0,
+        'vue/require-default-prop': 0,
     }
 }

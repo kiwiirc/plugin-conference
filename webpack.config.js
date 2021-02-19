@@ -1,30 +1,41 @@
-/* eslint-disable vue/html-indent */
-const regeneratorRuntime = require("regenerator-runtime");
 const path = require('path');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
+
+const makeSourceMap = process.argv.indexOf('--srcmap') > -1;
 
 module.exports = {
-    mode: 'development',
-    entry: "./plugin-conference.js",
+    mode: 'production',
+    entry: './src/plugin.js',
     output: {
-        filename: 'plugin-conference.min.js',
+        filename: 'plugin-conference.js',
     },
     module: {
-        rules: [{
-            test: /\.js$/,
-            exclude: /node_modules/,
-            loader: 'babel-loader',
-            query: {
-                presets: ['@babel/preset-env'],
+        rules: [
+            {
+                test: /\.vue$/,
+                loader: 'vue-loader',
             },
-        }],
-    },
-    devServer: {
-        contentBase: path.join(__dirname, 'dist'),
-        compress: true,
-        host: '0.0.0.0',
+            {
+                test: /\.js$/,
+                use: [{loader: 'exports-loader'}, {loader: 'babel-loader'}],
+                include: [
+                    path.join(__dirname, 'src'),
+                ]
+            },
+            {
+                test: /\.css$/,
+                use: [ 'style-loader', 'css-loader' ]
+            },
+        ]
     },
     plugins: [
-      new UglifyJsPlugin()
-    ]
+        new VueLoaderPlugin(),
+    ],
+    devtool: makeSourceMap ? 'source-map' : '',
+    devServer: {
+        filename: 'plugin-conference.js',
+        contentBase: path.join(__dirname, "dist"),
+        compress: true,
+        port: 9000
+    }
 };
