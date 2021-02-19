@@ -23,10 +23,10 @@ Add the plugin javascript file to your kiwiirc `config.json` and configure the s
     "plugins": [
         {
             "name": "conference",
-            "url": "static/plugins/plugin-conference/dist/plugin-conference.js"
+            "url": "static/plugins/plugin-conference.js"
         }
     ],
-    "plugin-conference": {
+    "conference": {
         "server": "meet.jit.si",
         "secure": false
     }
@@ -43,7 +43,7 @@ Jitsi Meet supports extra configuration to customise its interface and functions
 
 The defaults are:
 ~~~json
-"plugin-conference": {
+"conference": {
     "secure": false,
     "server": "meet.jit.si",
     "queries": true,
@@ -77,7 +77,7 @@ The defaults are:
 ~~~
 
 The 'showLink' item, if enabled, will append a direct link to the broadcasted join message which opens the jitsi conference for non-Kiwi users.
-The 'useUseLinkShortener' item, if enabled (requires showLink to also be enabled), will shorten the link displayed using a link shortening service like Bitly. If you like, yout can sign up for a free Bitly account to use the API (https://bitly.com/). Once registered, follow the instructions to generate an access token, then provide that in Kiwi's config @ "linkShortenerAPIToken". Note that some services, like x0.no do not require API tokens, in which case the token can be omitted.
+The 'useUseLinkShortener' item, if enabled (requires showLink to also be enabled), will shorten the link displayed using a link shortening service like Bitly. If you like, you can sign up for a free Bitly account to use the API (https://bitly.com/). Once registered, follow the instructions to generate an access token, then provide that in Kiwi's config @ "linkShortenerAPIToken". Note that some services, like x0.no do not require API tokens, in which case the token can be omitted.
 
 Examples of linkShortenerURL data are:
 
