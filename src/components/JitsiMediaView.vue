@@ -109,6 +109,22 @@ export default {
                 parentNode: this.$el,
                 configOverwrite: configOverwrite,
                 interfaceConfigOverwrite: config.setting('interfaceConfigOverwrite'),
+                onload: () => {
+                    this.api.executeCommand('displayName', this.network.nick);
+                    this.api.executeCommand('subject', ' ');
+                    this.api.once('videoConferenceJoined', () => {
+                        this.loadingAnimationStop();
+                        this.isJoined = true;
+                        if (!config.setting('showLink') || this.link) {
+                            // if showLink is disabled or the link is ready send our join message,
+                            // if the link is not ready the message will be send when it is
+                            this.sendJoinMessage();
+                        }
+                    });
+                    this.api.once('videoConferenceLeft', () => {
+                        kiwi.emit('mediaviewer.hide');
+                    });
+                },
             };
 
             if (config.setting('secure')) {
@@ -117,20 +133,6 @@ export default {
             }
 
             this.api = new window.JitsiMeetExternalAPI(domain, options);
-            this.api.executeCommand('displayName', this.network.nick);
-            this.api.executeCommand('subject', ' ');
-            this.api.once('videoConferenceJoined', () => {
-                this.loadingAnimationStop();
-                this.isJoined = true;
-                if (!config.setting('showLink') || this.link) {
-                    // if showLink is disabled or the link is ready send our join message,
-                    // if the link is not ready the message will be send when it is
-                    this.sendJoinMessage();
-                }
-            });
-            this.api.once('videoConferenceLeft', () => {
-                kiwi.emit('mediaviewer.hide');
-            });
         },
         sendJoinMessage() {
             let msgText = this.buffer.isQuery() ?
