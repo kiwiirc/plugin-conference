@@ -1,8 +1,6 @@
 <template>
-    <div>
-        <div v-if="showButton" class="plugin-conference-button" @click="openJitsi()">
-            <a><i aria-hidden="true" class="fa fa-phone" /></a>
-        </div>
+    <div v-if="showButton" class="plugin-conference-button" @click="openJitsi()">
+        <a><i aria-hidden="true" class="fa fa-phone" /></a>
     </div>
 </template>
 
@@ -13,19 +11,11 @@ import JitsiMediaView from './JitsiMediaView.vue';
 import * as config from '../config.js';
 
 export default {
-    data() {
-        return {
-            showButton: false,
-            pluginState: {
-                isActive: false,
-            },
-        };
-    },
-    created() {
-        kiwi.state.$watch('ui.active_buffer', () => {
-            let buffer = kiwi.state.getActiveBuffer();
-            this.showButton = config.isAllowedBuffer(buffer);
-        });
+    props: ['network', 'buffer', 'sidebarState', 'pluginState'],
+    computed: {
+        showButton() {
+            return config.isAllowedBuffer(this.buffer);
+        }
     },
     methods: {
         openJitsi() {
@@ -35,7 +25,7 @@ export default {
                     component: JitsiMediaView,
                     componentProps: {
                         pluginState: this.pluginState,
-                        buffer: kiwi.state.getActiveBuffer(),
+                        buffer: this.buffer,
                     },
                 });
                 return;

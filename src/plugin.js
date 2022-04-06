@@ -24,22 +24,12 @@ kiwi.plugin('conference', (kiwi) => {
 
     // Add conference buttons
     if (config.getSetting('channels') || config.getSetting('queries')) {
-        let ButtonComponent = kiwi.Vue.extend(HeaderButton);
-        let buttonInstance = new ButtonComponent({
-            data() {
-                return {
-                    pluginState: pluginState,
-                };
-            },
-        });
-        buttonInstance.$mount();
-
         if (config.getSetting('channels')) {
-            kiwi.addUi('header_channel', buttonInstance.$el);
+            kiwi.addUi('header_channel', HeaderButton, { props: { pluginState } });
         }
 
         if (config.getSetting('queries')) {
-            kiwi.addUi('header_query', buttonInstance.$el);
+            kiwi.addUi('header_query', HeaderButton, { props: { pluginState } });
         }
     }
 
@@ -77,7 +67,7 @@ kiwi.plugin('conference', (kiwi) => {
             bufferName = event.nick;
         }
 
-        let inviteState = activeInviteStates[bufferName];
+        let inviteState = activeInviteStates[bufferName.toUpperCase()];
         if (inviteState && inviteState.timeout + config.setting('groupInvitesTTL') > Date.now()) {
             if (inviteState.members.indexOf(event.nick) === -1) {
                 // Add this nick to the existing invite component
@@ -97,25 +87,18 @@ kiwi.plugin('conference', (kiwi) => {
             return;
         }
 
-        activeInviteStates[buffer.name] = {
+        let inviteState = kiwi.Vue.observable({
             members: [message.nick],
             timeout: Date.now(),
-        };
-
-        let MessageComponent = kiwi.Vue.extend(MessageTemplate);
-        let messageInstance = new MessageComponent({
-            propsData: {
-                buffer: buffer,
-            },
-            data() {
-                return {
-                    pluginState: pluginState,
-                    inviteState: activeInviteStates[buffer.name],
-                };
-            },
         });
-        messageInstance.$mount();
-        message.template = messageInstance;
+
+        activeInviteStates[buffer.name.toUpperCase()] = inviteState;
+
+        message.template = kiwi.Vue.extend(MessageTemplate);
+        message.templateProps = {
+            inviteState,
+            pluginState,
+        }
     });
 
     function isConference(tags) {
