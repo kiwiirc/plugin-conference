@@ -98,7 +98,7 @@ kiwi.plugin('conference', (kiwi) => {
         message.templateProps = {
             inviteState,
             pluginState,
-        }
+        };
     });
 
     function isConference(tags) {

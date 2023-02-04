@@ -48,6 +48,7 @@ The defaults are:
     "server": "meet.jit.si",
     "queries": true,
     "channels": true,
+    "buttonIcon": "fa-phone",
     "viewHeight": "40%",
     "enabledInChannels": ["*"],
     "groupInvitesTTL": 30000,

@@ -1,5 +1,4 @@
 /* global kiwi:true */
-/* global _:true */
 
 let configBase = 'conference';
 let defaultConfig = {
