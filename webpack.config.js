@@ -17,7 +17,7 @@ module.exports = {
             },
             {
                 test: /\.js$/,
-                use: [{loader: 'exports-loader'}, {loader: 'babel-loader'}],
+                use: [{loader: 'babel-loader'}],
                 include: [
                     path.join(__dirname, 'src'),
                 ]
@@ -31,10 +31,9 @@ module.exports = {
     plugins: [
         new VueLoaderPlugin(),
     ],
-    devtool: makeSourceMap ? 'source-map' : '',
+    devtool: makeSourceMap ? 'source-map' : undefined,
     devServer: {
-        filename: 'plugin-conference.js',
-        contentBase: path.join(__dirname, "dist"),
+        static: path.join(__dirname, "dist"),
         compress: true,
         port: 9000
     }
