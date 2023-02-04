@@ -1,6 +1,6 @@
 <template>
     <div v-if="showButton" class="plugin-conference-button" @click="openJitsi()">
-        <a><i aria-hidden="true" class="fa fa-phone" /></a>
+        <a><i aria-hidden="true" :class="buttonIcon" class="fa" /></a>
     </div>
 </template>
 
@@ -15,7 +15,10 @@ export default {
     computed: {
         showButton() {
             return config.isAllowedBuffer(this.buffer);
-        }
+        },
+        buttonIcon() {
+            return config.setting('buttonIcon');
+        },
     },
     methods: {
         openJitsi() {
