@@ -1,5 +1,4 @@
 /* global kiwi:true */
-/* global _:true */
 
 let configBase = 'conference';
 let defaultConfig = {
@@ -8,6 +7,7 @@ let defaultConfig = {
     server: 'meet.jit.si',
     queries: true,
     channels: true,
+    buttonIcon: 'fa-phone',
     viewHeight: '40%',
     enabledInChannels: ['*'],
     groupInvitesTTL: 30000,
@@ -36,18 +36,7 @@ let defaultConfig = {
 };
 
 export function setDefaults() {
-    let walkConfig = (obj, _target) => {
-        _.each(obj, (val, key) => {
-            let target = [..._target, key];
-            let targetName = target.join('.');
-            if (typeof val === 'object' && !_.isArray(val)) {
-                walkConfig(val, target);
-            } else if (typeof getSetting(targetName) === 'undefined') {
-                setSetting(targetName, val);
-            }
-        });
-    };
-    walkConfig(defaultConfig, []);
+    kiwi.setConfigDefaults(configBase, defaultConfig);
 }
 
 export function setting(name) {

@@ -17,18 +17,7 @@ import JitsiMediaView from './JitsiMediaView.vue';
 import * as config from '../config.js';
 
 export default {
-    props: ['buffer'],
-    data() {
-        return {
-            pluginState: {
-                isActive: false,
-            },
-            inviteState: {
-                members: [],
-                timeout: 0,
-            },
-        };
-    },
+    props: ['buffer', 'message', 'idx', 'ml', 'pluginState', 'inviteState'],
     computed: {
         nicks() {
             let maxLength = config.setting('maxParticipantsLength');
@@ -62,7 +51,7 @@ export default {
                 component: JitsiMediaView,
                 componentProps: {
                     pluginState: this.pluginState,
-                    buffer: kiwi.state.getActiveBuffer(),
+                    buffer: this.buffer,
                 },
             });
         },
