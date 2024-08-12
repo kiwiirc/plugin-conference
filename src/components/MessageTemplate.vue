@@ -3,7 +3,7 @@
         <div class="plugin-conference-jointext">
             {{ buffer.isQuery() ? inviteText : joinText }}
         </div>
-        <div v-if="!pluginState.isActive" class="u-button u-button-primary" @click="openJitsi()">
+        <div v-if="!pluginState.isActive && (buffer.isQuery() || buffer.joined)" class="u-button u-button-primary" @click="openJitsi()">
             <i aria-hidden="true" class="fa fa-phone" />
             <span class="plugin-conference-joinbutton">{{ joinButtonText }}</span>
         </div>
