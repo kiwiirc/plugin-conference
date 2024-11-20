@@ -1,11 +1,11 @@
 <template>
     <div class="plugin-conference-join">
         <div class="plugin-conference-jointext">
-            {{ buffer.isQuery() ? inviteText : joinText }}
+            {{ $t('plugin-conference:' + (buffer.isQuery() ? 'inviteText' : 'joinText'), { nick: nicks.join(', ') }) }}
         </div>
-        <div v-if="!pluginState.isActive && (buffer.isQuery() || buffer.joined)" class="u-button u-button-primary" @click="openJitsi()">
+        <div v-if="shouldShowButtons" class="u-button u-button-primary" @click="openJitsi()">
             <i aria-hidden="true" class="fa fa-phone" />
-            <span class="plugin-conference-joinbutton">{{ joinButtonText }}</span>
+            <span class="plugin-conference-joinbutton">{{ $t('plugin-conference:joinNow') }}</span>
         </div>
     </div>
 </template>
@@ -13,35 +13,37 @@
 <script>
 
 /* global kiwi:true */
-import JitsiMediaView from './JitsiMediaView.vue';
-import * as config from '../config.js';
+import * as config from '@/config.js';
+
+import JitsiMediaView from '@/components/JitsiMediaView.vue';
+
+const TextFormatting = kiwi.require('helpers/TextFormatting');
 
 export default {
     props: ['buffer', 'message', 'idx', 'ml', 'pluginState', 'inviteState'],
     computed: {
         nicks() {
-            let maxLength = config.setting('maxParticipantsLength');
-            let showNicks = [];
+            const maxLength = config.setting('maxParticipantsLength');
+            const showNicks = [];
             let length = 0;
             for (let i = 0; i < this.inviteState.members.length; i++) {
-                let nick = this.inviteState.members[i];
+                const nick = this.inviteState.members[i];
                 length += nick.length;
                 if (length > maxLength) {
-                    showNicks.push(config.setting('participantsMore'));
+                    showNicks.push(TextFormatting.t('plugin-conference:participantsMore'));
                     break;
                 }
                 showNicks.push(nick);
             }
             return showNicks;
         },
-        joinButtonText() {
-            return config.setting('joinButtonText');
-        },
-        inviteText() {
-            return config.setting('inviteText').replace('{{ nick }}', this.nicks.join(', '));
-        },
-        joinText() {
-            return config.setting('joinText').replace('{{ nick }}', this.nicks.join(', '));
+        shouldShowButtons() {
+            const network = this.buffer.getNetwork();
+            return !this.pluginState.isActive
+                && (
+                    (this.buffer.isQuery() && network.state.connected)
+                    || this.buffer.joined
+                );
         },
     },
     methods: {
@@ -61,13 +63,13 @@ export default {
 
 <style>
 .plugin-conference-join {
-    background: var(--brand-midtone);
     box-sizing: border-box;
+    width: 100%;
+    padding: 20px;
     font-size: 1.05em;
     line-height: 1.05em;
-    padding: 20px;
     text-align: center;
-    width: 100%;
+    background: var(--brand-midtone);
 }
 
 .plugin-conference-jointext {
