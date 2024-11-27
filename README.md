@@ -42,21 +42,23 @@ Note that the "secure" option enables JWT authentication, but will not work on J
 Jitsi Meet supports extra configuration to customise its interface and functions. You can configure these via the optional `interfaceConfigOverwrite` and `configOverwrite` config options.
 
 The defaults are:
-~~~json
-"conference": {
+~~~json5
+"plugin-conference": {
     "secure": false,
     "server": "meet.jit.si",
     "queries": true,
     "channels": true,
+    "closeOnLeave": true,
     "buttonIcon": "fa-phone",
     "viewHeight": "40%",
-    "enabledInChannels": ["*"],
+    "enabledInChannels": [],
+    "disabledInChannels": [],
     "groupInvitesTTL": 30000,
     "maxParticipantsLength": 60,
-    "participantsMore": "more...",
+    // These messages are sent to irc for users not using the plugin
+    // Users with the plugin will see the translations
     "inviteText": "{{ nick }} is inviting you to a private call.",
     "joinText": "{{ nick }} has joined the conference.",
-    "joinButtonText": "Join now!",
     "showLink": false,
     "useLinkShortener": false,
     "linkShortenerURL": "https://x0.no/api/?{{ link }}",
@@ -65,9 +67,10 @@ The defaults are:
         "SHOW_JITSI_WATERMARK": false,
         "SHOW_WATERMARK_FOR_GUESTS": false,
         "TOOLBAR_BUTTONS": [
-            "microphone", "camera", "fullscreen", "hangup",
-            "settings", "videoquality", "filmstrip", "fodeviceselection",
-            "stats", "shortcuts",
+            "camera", "closedcaptions", "desktop", "etherpad", "filmstrip",
+            "fullscreen", "hangup", "help", "highlight", "livestreaming",
+            "microphone", "noisesuppression", "raisehand", "select-background",
+            "settings", "shortcuts", "stats", "tileview", "toggle-camera",
         ],
     },
     "configOverwrite": {
@@ -96,7 +99,7 @@ More info about Jitsi's options can be found in these files:
 * https://github.com/jitsi/jitsi-meet/blob/master/interface_config.js
 * https://github.com/jitsi/jitsi-meet/blob/master/config.js
 
-You may also choose to hide the conference call icon in either channels or private messages:
+You may also choose to hide the conference call icon in either channels or direct messages:
 ```json
 {
     "channels": false,
@@ -108,4 +111,4 @@ Running your own conference server allows you to secure your conference rooms. W
 
 ## License
 
-[ Licensed under the Apache License, Version 2.0](LICENSE).
+[Licensed under the Apache License, Version 2.0](LICENSE).
