@@ -103,6 +103,7 @@ export default {
             let configOverwrite = config.setting('configOverwrite');
             configOverwrite.prejoinPageEnabled = false;
 
+            let user = this.network.currentUser();
             let domain = config.setting('server');
             let options = {
                 roomName: this.encodedRoomName,
@@ -112,6 +113,9 @@ export default {
                 onload: () => {
                     this.api.executeCommand('displayName', this.network.nick);
                     this.api.executeCommand('subject', ' ');
+                    if (user.avatar && (user.avatar.large || user.avatar.small)) {
+                        this.api.executeCommand('avatarUrl', user.avatar.large || user.avatar.small);
+                    }
                     this.api.once('videoConferenceJoined', () => {
                         this.loadingAnimationStop();
                         this.isJoined = true;
