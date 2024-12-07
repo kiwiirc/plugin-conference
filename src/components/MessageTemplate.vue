@@ -41,7 +41,7 @@ export default {
             const network = this.buffer.getNetwork();
             return !this.pluginState.isActive
                 && (
-                    (this.buffer.isQuery() && network.state.connected)
+                    (this.buffer.isQuery() && network.state === 'connected')
                     || this.buffer.joined
                 );
         },

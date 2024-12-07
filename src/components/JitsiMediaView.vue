@@ -127,10 +127,13 @@ export default {
             const configOverwrite = config.setting('configOverwrite');
 
             // Disable prejoin page as we are setting the users nick
-            configOverwrite.prejoinPageEnabled = false;
-            configOverwrite.prejoinConfig = {
-                enabled: false,
-            };
+            Object.assign(configOverwrite, {
+                prejoinPageEnabled: false,
+                prejoinConfig: {
+                    enabled: false,
+                },
+                hideConferenceSubject: true,
+            });
 
             if (config.setting('showLink') && !this.link) {
                 this.getLink();
