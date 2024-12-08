@@ -48,7 +48,7 @@ export default {
         participantsMore: 'más...',
     },
     'pt-pt': {
-        notSupported: 'Este navegador não é compatível. \nPor favor, atualize o seu navegador.',
+        notSupported: 'Este navegador não é compatível.\nPor favor, atualize o seu navegador.',
         closeConference: 'Encerrar a conferência atual?',
         joinNow: 'Entra agora!',
         inviteText: '{{ nick }} está a convidá-lo para uma chamada privada.',
