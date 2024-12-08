@@ -1,0 +1,23 @@
+{
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "stylelint.validate": [
+        "vue",
+        "css",
+        "less",
+        "sass",
+        "scss",
+        "postcss"
+    ],
+    "[javascript]": {
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+    },
+    "[vue]": {
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+    },
+    "[css]": {
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+    },
+}

@@ -1,4 +1,5 @@
 .DS_Store
+.yarn/
 dist/
 node_modules/
 
@@ -13,7 +14,6 @@ yarn-error.log*
 
 # Editor directories and files
 .idea
-.vscode
 *.suo
 *.ntvs*
 *.njsproj

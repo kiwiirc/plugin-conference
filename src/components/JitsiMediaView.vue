@@ -1,16 +1,39 @@
 <template>
-    <div class="plugin-conference-jitsi">
-        <div v-if="isJoined" class="plugin-conference-overlay">
-            {{ roomName }} @ {{ network.name }}
+    <div class="p-conference-jitsi">
+        <div v-if="isJoined" class="p-conference-overlay">{{ roomName }} @ {{ network.name }}</div>
+        <div v-if="isLoading" class="p-conference-loading">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
+                <g>
+                    <circle cx="12" cy="2.5" r="1.5" opacity="0.14" />
+                    <circle cx="16.75" cy="3.77" r="1.5" opacity="0.29" />
+                    <circle cx="20.23" cy="7.25" r="1.5" opacity="0.43" />
+                    <circle cx="21.5" cy="12" r="1.5" opacity="0.57" />
+                    <circle cx="20.23" cy="16.75" r="1.5" opacity="0.71" />
+                    <circle cx="16.75" cy="20.23" r="1.5" opacity="0.86" />
+                    <circle cx="12" cy="21.5" r="1.5" />
+                    <animateTransform
+                        attributeName="transform"
+                        calcMode="discrete"
+                        dur="0.75s"
+                        repeatCount="indefinite"
+                        type="rotate"
+                        values="0 12 12;30 12 12;60 12 12;90 12 12;120 12 12;150 12 12;180
+                            12 12;210 12 12;240 12 12;270 12 12;300 12 12;330 12 12;360 12 12"
+                    />
+                </g>
+            </svg>
+        </div>
+        <div v-else-if="notSupported" class="p-conference-notsupported">
+            {{ $t('plugin-conference:notSupported') }}
         </div>
     </div>
 </template>
 
 <script>
-
 /* global kiwi:true */
-import platform from 'platform';
-import * as config from '../config.js';
+
+import * as config from '@/config.js';
+import * as utils from '@/lib/utils.js';
 
 export default {
     props: ['componentProps'],
@@ -19,25 +42,21 @@ export default {
             api: null,
             link: '',
             token: '',
+            encodedRoomName: '',
             isJoined: false,
+            isLoading: false,
             loadingAnimation: null,
+            notSupported: false,
         };
     },
     computed: {
         roomName() {
             if (this.buffer.isQuery()) {
-                let members = [
-                    this.network.nick,
-                    this.buffer.name,
-                ];
+                const members = [this.network.nick, this.buffer.name];
                 members.sort();
-                return 'query-' + members.join('+');
+                return members.join('+');
             }
             return this.buffer.name;
-        },
-        encodedRoomName() {
-            let room = this.network.connection.server + '/' + this.roomName;
-            return room.split('').map((c) => c.charCodeAt(0).toString(16)).join('');
         },
         buffer() {
             return this.componentProps.buffer;
@@ -46,27 +65,21 @@ export default {
             return this.buffer.getNetwork();
         },
     },
+    watch: {
+        'buffer.joined'(newVal) {
+            if (!newVal && config.setting('closeOnLeave')) {
+                // Close the conference if the user is no longer in the channel
+                kiwi.emit('mediaviewer.hide');
+            }
+        },
+    },
     mounted() {
-        if (platform.name === 'IE') {
-            let notSupported = document.createElement('div');
-            notSupported.style.textAlign = 'center';
-            notSupported.innerHTML = '<div class="plugin-conference-notsupported">This browser is not supported.<br />Please update your browser.</div>';
-            this.$el.appendChild(notSupported);
-            return;
-        }
-
-        this.loadingAnimationStart();
-
-        if (config.setting('showLink')) {
-            this.getLink();
-        }
+        this.isLoading = true;
 
         if (config.setting('secure')) {
-            kiwi.once('irc.raw.EXTJWT', (command, message) => {
-                this.token = message.params[1];
-                this.scriptLoad();
-            });
-            this.network.ircClient.raw('EXTJWT', this.roomName);
+            kiwi.on('irc.raw.EXTJWT', this.handleExtjwt);
+            const jwtTarget = this.buffer.isQuery() ? '*' : this.roomName;
+            this.network.ircClient.raw('EXTJWT', jwtTarget);
         } else {
             this.scriptLoad();
         }
@@ -79,7 +92,7 @@ export default {
     },
     beforeDestroy() {
         this.componentProps.pluginState.isActive = false;
-        let mediaviewer = this.$el.parentElement;
+        const mediaviewer = this.$el.parentElement;
         if (mediaviewer) {
             mediaviewer.style.height = '';
         }
@@ -89,36 +102,63 @@ export default {
         }
     },
     methods: {
+        handleExtjwt(command, message) {
+            if (message.params[2] === '*') {
+                this.token = message.params[3];
+            } else {
+                this.token += message.params[2];
+                this.scriptLoad();
+                kiwi.off('irc.raw.EXTJWT', this.handleExtjwt);
+            }
+        },
         scriptLoad() {
-            let that = this;
-            let scr = document.createElement('script');
+            const roomNamePromise = utils.encodeRoomName(this.network.connection.server + '/' + this.roomName);
+            const scr = document.createElement('script');
             scr.src = 'https://' + config.setting('server') + '/external_api.js';
-            scr.onload = () => {
-                that.scriptLoaded();
+            scr.onload = async () => {
+                const roomName = await roomNamePromise;
+                this.encodedRoomName = (this.buffer.isQuery()) ? 'q-' + roomName : roomName;
+                this.scriptLoaded();
             };
             scr.defer = true;
             this.$el.appendChild(scr);
         },
         scriptLoaded() {
-            let configOverwrite = config.setting('configOverwrite');
-            configOverwrite.prejoinPageEnabled = false;
+            const configOverwrite = config.setting('configOverwrite');
 
-            let user = this.network.currentUser();
-            let domain = config.setting('server');
-            let options = {
+            // Disable prejoin page as we are setting the users nick
+            Object.assign(configOverwrite, {
+                prejoinPageEnabled: false,
+                prejoinConfig: {
+                    enabled: false,
+                },
+                hideConferenceSubject: true,
+            });
+
+            if (config.setting('showLink') && !this.link) {
+                this.getLink();
+            }
+
+            const user = this.network.currentUser();
+            const domain = config.setting('server');
+            const options = {
                 roomName: this.encodedRoomName,
+                userInfo: {
+                    displayName: this.network.nick,
+                },
                 parentNode: this.$el,
                 configOverwrite: configOverwrite,
                 interfaceConfigOverwrite: config.setting('interfaceConfigOverwrite'),
                 onload: () => {
-                    this.api.executeCommand('displayName', this.network.nick);
-                    this.api.executeCommand('subject', ' ');
-                    if (user.avatar && (user.avatar.large || user.avatar.small)) {
-                        this.api.executeCommand('avatarUrl', user.avatar.large || user.avatar.small);
-                    }
-                    this.api.once('videoConferenceJoined', () => {
-                        this.loadingAnimationStop();
+                    this.api.executeCommand('toggleTileView');
+                    this.api.once('videoConferenceJoined', (event) => {
+                        this.isLoading = false;
                         this.isJoined = true;
+
+                        if (user.avatar && (user.avatar.large || user.avatar.small)) {
+                            this.api.executeCommand('avatarUrl', user.avatar.large || user.avatar.small);
+                        }
+
                         if (!config.setting('showLink') || this.link) {
                             // if showLink is disabled or the link is ready send our join message,
                             // if the link is not ready the message will be send when it is
@@ -128,20 +168,24 @@ export default {
                     this.api.once('videoConferenceLeft', () => {
                         kiwi.emit('mediaviewer.hide');
                     });
+                    this.api.once('browserSupport', (event) => {
+                        if (!event.supported) {
+                            this.isLoading = false;
+                            this.isJoined = false;
+                            this.notSupported = true;
+                        }
+                    });
                 },
             };
 
             if (config.setting('secure')) {
                 options.jwt = this.token;
-                options.noSsl = false;
             }
 
             this.api = new window.JitsiMeetExternalAPI(domain, options);
         },
         sendJoinMessage() {
-            let msgText = this.buffer.isQuery() ?
-                config.setting('inviteText') :
-                config.setting('joinText');
+            let msgText = this.buffer.isQuery() ? config.setting('inviteText') : config.setting('joinText');
 
             msgText = '* ' + msgText.replace('{{ nick }}', this.network.nick);
 
@@ -149,34 +193,19 @@ export default {
                 msgText += ' ' + this.link;
             }
 
-            let message = new this.network.ircClient.Message('PRIVMSG', this.buffer.name, msgText);
+            const message = new this.network.ircClient.Message('PRIVMSG', this.buffer.name, msgText);
             message.prefix = this.network.nick;
             message.tags['+kiwiirc.com/conference'] = config.getSetting('tagID');
             this.network.ircClient.raw(message);
         },
-        loadingAnimationStart() {
-            if (this.loadingAnimation) {
-                return;
-            }
-            this.loadingAnimation = document.createElement('div');
-            this.loadingAnimation.style.position = 'absolute';
-            this.loadingAnimation.style.top = '34%';
-            this.loadingAnimation.style.marginLeft = '45%';
-            this.loadingAnimation.innerHTML = '<i class="fa fa-spin fa-spinner" aria-hidden="true" style="font-size: 100px;"/>';
-            this.$el.appendChild(this.loadingAnimation);
-        },
-        loadingAnimationStop() {
-            this.$el.removeChild(this.loadingAnimation);
-            this.loadingAnimation = null;
-        },
         getLink() {
-            let link = 'https://' + config.setting('server') + '/' + this.encodedRoomName;
+            const link = 'https://' + config.setting('server') + '/' + this.encodedRoomName;
             if (!config.setting('useLinkShortener')) {
                 this.link = link;
                 return;
             }
 
-            let shortURL = config.setting('linkShortenerURL');
+            const shortURL = config.setting('linkShortenerURL');
             if (shortURL.indexOf('api-ssl.bitly.com') > -1) {
                 this.getBitlyLink(shortURL, link);
             } else {
@@ -184,59 +213,83 @@ export default {
             }
         },
         getShortLink(shortURL, link) {
-            let requestURL = shortURL.replace('{{ link }}', link);
-            let noCorsURL = 'https://cors-anywhere.herokuapp.com/';
-            fetch(noCorsURL + requestURL).then((r) => r.text()).then((result) => {
-                let urlRegex = kiwi.require('helpers/TextFormatting').urlRegex;
-                let isUrl = new RegExp('^' + urlRegex.source + '$');
-                // catch any issues by making sure the result is a url
-                if (isUrl.test(result)) {
-                    this.link = result;
-                }
-                if (this.isJoined) {
-                    this.sendJoinMessage();
-                }
-            });
+            const requestURL = shortURL.replace('{{ link }}', link);
+            fetch(requestURL)
+                .then((r) => r.text())
+                .then((result) => {
+                    const urlRegex = kiwi.require('helpers/TextFormatting').urlRegex;
+                    const isUrl = new RegExp('^' + urlRegex.source + '$');
+                    // catch any issues by making sure the result is a url
+                    if (isUrl.test(result)) {
+                        this.link = result;
+                    }
+                    if (this.isJoined) {
+                        this.sendJoinMessage();
+                    }
+                });
         },
         getBitlyLink(bitlyURL, link) {
-            let apiKey = config.setting('linkShortenerAPIToken');
-            let requestURL = bitlyURL + '?access_token=' + apiKey + '&longUrl=' + link;
-            fetch(requestURL).then((r) => r.json()).then((result) => {
-                this.link = result.url;
-                if (this.isJoined) {
-                    this.sendJoinMessage();
-                }
-            });
+            const apiKey = config.setting('linkShortenerAPIToken');
+            const requestURL = bitlyURL + '?access_token=' + apiKey + '&longUrl=' + link;
+            fetch(requestURL)
+                .then((r) => r.json())
+                .then((result) => {
+                    this.link = result.url;
+                    if (this.isJoined) {
+                        this.sendJoinMessage();
+                    }
+                });
         },
     },
 };
 </script>
 
-<style>
-.plugin-conference-jitsi {
+<style lang="scss">
+.p-conference-jitsi {
     height: 100%;
 
     /* fixes firefox showing scrollbar */
     overflow: hidden;
 }
 
-.plugin-conference-overlay {
-    background-color: rgba(0, 0, 0, 0.2);
-    color: #fff;
-    padding: 8px;
+.p-conference-overlay {
     position: absolute;
     top: 0;
+    left: 0;
     z-index: 10;
+    padding: 6px 6px 2px 6px;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.2);
 }
 
-.plugin-conference-notsupported {
-    background-color: var(--brand-error);
-    border-radius: 5px;
-    color: var(--brand-default-fg);
+.p-conference-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.6);
+
+    > svg {
+        width: min(max(20vb, 80px), 200px);
+        height: min(max(20vb, 80px), 200px);
+        fill: #fff;
+    }
+
+    > i {
+        font-size: 100px;
+    }
+}
+
+.p-conference-notsupported {
     display: inline-block;
+    padding: 25px;
+    margin: 25px auto;
     font-size: 130%;
     font-weight: 600;
-    margin: 25px auto;
-    padding: 25px;
+    color: var(--brand-default-fg);
+    background-color: var(--brand-error);
+    border-radius: 5px;
 }
 </style>
