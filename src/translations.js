@@ -47,4 +47,12 @@ export default {
         joinText: '{{ nick }} se ha unido a la conferencia.',
         participantsMore: 'más...',
     },
+    'pt-pt': {
+        notSupported: 'Este navegador não é compatível.\nPor favor, atualize o seu navegador.',
+        closeConference: 'Encerrar a conferência atual?',
+        joinNow: 'Entra agora!',
+        inviteText: '{{ nick }} está a convidá-lo para uma chamada privada.',
+        joinText: '{{ nick }} entrou na conferência.',
+        participantsMore: 'mais...',
+    },
 };
