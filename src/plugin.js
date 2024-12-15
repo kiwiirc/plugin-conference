@@ -1,21 +1,24 @@
 /* global kiwi:true */
 
-import * as config from './config.js';
+import * as config from '@/config.js';
 
-import HeaderButton from './components/HeaderButton.vue';
-import MessageTemplate from './components/MessageTemplate.vue';
-import JitsiMediaView from './components/JitsiMediaView.vue';
+import translations from '@/translations.js';
+import HeaderButton from '@/components/HeaderButton.vue';
+import MessageTemplate from '@/components/MessageTemplate.vue';
+import JitsiMediaView from '@/components/JitsiMediaView.vue';
 
 kiwi.plugin('conference', (kiwi) => {
     config.setDefaults();
 
-    let tagID = config.getSetting('tagID').toString();
+    kiwi.addTranslations(config.configBase, translations);
 
-    let pluginState = {
+    const tagID = config.getSetting('tagID').toString();
+
+    const pluginState = {
         isActive: false,
     };
 
-    let activeInviteStates = {
+    const activeInviteStates = {
         // bufferName: {
         //     members: ['nick1', 'nick2'],
         //     timeout: 12345,
@@ -67,7 +70,7 @@ kiwi.plugin('conference', (kiwi) => {
             bufferName = event.nick;
         }
 
-        let inviteState = activeInviteStates[bufferName.toUpperCase()];
+        const inviteState = activeInviteStates[bufferName.toUpperCase()];
         if (inviteState && inviteState.timeout + config.setting('groupInvitesTTL') > Date.now()) {
             if (inviteState.members.indexOf(event.nick) === -1) {
                 // Add this nick to the existing invite component
@@ -81,13 +84,13 @@ kiwi.plugin('conference', (kiwi) => {
 
     // Listen for new conference message and replace with our component
     kiwi.on('message.new', (event) => {
-        let message = event.message;
-        let buffer = event.buffer;
+        const message = event.message;
+        const buffer = event.buffer;
         if (!isConference(message.tags)) {
             return;
         }
 
-        let inviteState = kiwi.Vue.observable({
+        const inviteState = kiwi.Vue.observable({
             members: [message.nick],
             timeout: Date.now(),
         });
