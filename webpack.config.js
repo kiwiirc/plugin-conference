@@ -1,4 +1,5 @@
 const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 const makeSourceMap = process.argv.indexOf('--srcmap') > -1;
@@ -31,6 +32,11 @@ module.exports = {
     plugins: [
         new VueLoaderPlugin(),
     ],
+    optimization: {
+        minimizer: [new TerserPlugin({
+            extractComments: false,
+        })],
+    },
     devtool: makeSourceMap ? 'source-map' : undefined,
     devServer: {
         static: path.join(__dirname, "dist"),

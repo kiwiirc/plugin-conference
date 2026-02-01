@@ -102,6 +102,9 @@ export default {
         scriptLoaded() {
             let configOverwrite = config.setting('configOverwrite');
             configOverwrite.prejoinPageEnabled = false;
+            configOverwrite.prejoinConfig = {
+                enabled: false,
+            };
 
             let user = this.network.currentUser();
             let domain = config.setting('server');
