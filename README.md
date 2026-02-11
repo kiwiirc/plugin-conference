@@ -36,7 +36,7 @@ Add the plugin javascript file to your kiwiirc `config.json` and configure the s
 ### Security note!
 By default, this plugin uses Jisti's public servers. It should be noted that by using these public servers, your conference calls are not secure in that anybody can join them if they can guess the room name.
 
-Note that the "secure" option enables JWT authentication, but will not work on Jitsi's public server.
+Note that the "secure" option enables JWT authentication, but will not work on Jitsi's public server. For more information see [Running your own conference server](#Running-your-own-conference-server)
 
 ### Extra configuration
 Jitsi Meet supports extra configuration to customise its interface and functions. You can configure these via the optional `interfaceConfigOverwrite` and `configOverwrite` config options.
@@ -104,7 +104,12 @@ You may also choose to hide the conference call icon in either channels or priva
 }
 ```
 ### Running your own conference server
-Running your own conference server allows you to secure your conference rooms. We make use of the Jitsi Meet server to handle the conference calls, the installation steps can be found here: https://github.com/jitsi/jitsi-meet/blob/master/doc/quick-install.md
+Running your own conference server allows you to secure your conference rooms. We make use of the Jitsi Meet server to handle the conference calls, the installation steps can be found here: https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-quickstart
+
+If docker is your preferred method then see here: https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-docker
+
+For installing and configuring jitsi to support [IRCv3 EXTJWT](https://github.com/ircv3/ircv3-specifications/pull/341) documentation can can be found here: https://github.com/kiwiirc/plugin-conference/blob/master/jitsi-meet-modules/README.md
+
 
 ## License
 
