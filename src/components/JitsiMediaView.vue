@@ -1,245 +1,414 @@
 <template>
-    <div class="plugin-conference-jitsi">
-        <div v-if="isJoined" class="plugin-conference-overlay">
+    <div ref="el" class="p-conference-jitsi">
+        <div v-if="isJoined" class="p-conference-overlay">
             {{ roomName }} @ {{ network.name }}
         </div>
+        <div v-if="isLoading" class="p-conference-loading">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
+                <g>
+                    <circle cx="12" cy="2.5" r="1.5" opacity="0.14" />
+                    <circle cx="16.75" cy="3.77" r="1.5" opacity="0.29" />
+                    <circle cx="20.23" cy="7.25" r="1.5" opacity="0.43" />
+                    <circle cx="21.5" cy="12" r="1.5" opacity="0.57" />
+                    <circle cx="20.23" cy="16.75" r="1.5" opacity="0.71" />
+                    <circle cx="16.75" cy="20.23" r="1.5" opacity="0.86" />
+                    <circle cx="12" cy="21.5" r="1.5" />
+                    <animateTransform
+                        attributeName="transform"
+                        calcMode="discrete"
+                        dur="0.75s"
+                        repeatCount="indefinite"
+                        type="rotate"
+                        values="0 12 12;30 12 12;60 12 12;90 12 12;120 12 12;150 12 12;180
+                            12 12;210 12 12;240 12 12;270 12 12;300 12 12;330 12 12;360 12 12"
+                    />
+                </g>
+            </svg>
+        </div>
+        <div v-else-if="notSupported" class="p-conference-notsupported" v-html="notSupportedText" />
     </div>
 </template>
 
-<script>
-
+<script setup>
 /* global kiwi:true */
-import platform from 'platform';
-import * as config from '../config.js';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 
-export default {
-    props: ['componentProps'],
-    data() {
-        return {
-            api: null,
-            link: '',
-            token: '',
-            isJoined: false,
-            loadingAnimation: null,
-        };
-    },
-    computed: {
-        roomName() {
-            if (this.buffer.isQuery()) {
-                let members = [
-                    this.network.nick,
-                    this.buffer.name,
-                ];
-                members.sort();
-                return 'query-' + members.join('+');
-            }
-            return this.buffer.name;
-        },
-        encodedRoomName() {
-            let room = this.network.connection.server + '/' + this.roomName;
-            return room.split('').map((c) => c.charCodeAt(0).toString(16)).join('');
-        },
-        buffer() {
-            return this.componentProps.buffer;
-        },
-        network() {
-            return this.buffer.getNetwork();
-        },
-    },
-    mounted() {
-        if (platform.name === 'IE') {
-            let notSupported = document.createElement('div');
-            notSupported.style.textAlign = 'center';
-            notSupported.innerHTML = '<div class="plugin-conference-notsupported">This browser is not supported.<br />Please update your browser.</div>';
-            this.$el.appendChild(notSupported);
+import * as config from '@/config.js';
+import * as utils from '@/lib/utils.js';
+import { t } from '@/translations.js';
+
+const emit = defineEmits(['setHeight']);
+const props = defineProps({
+    componentProps: { type: Object, required: true },
+});
+
+const el = ref(null);
+
+const api = ref(null);
+const link = ref('');
+const token = ref('');
+const encodedRoomName = ref('');
+const isJoined = ref(false);
+const isLoading = ref(false);
+const notSupported = ref(false);
+
+const buffer = computed(() => props.componentProps.buffer);
+const network = computed(() => buffer.value.getNetwork());
+const notSupportedText = computed(() => t('notSupported').replace('\n', '<br>'));
+const roomName = computed(() => {
+    if (buffer.value.isQuery()) {
+        return [network.value.nick, buffer.value.name].sort().join('+');
+    }
+    return buffer.value.name;
+});
+
+let unmounted = false;
+let scr = null;
+let abortController = null;
+
+let ircPartHandler;
+let ircQuitHandler;
+let ircKickHandler;
+
+// Stored at component scope so they can be cancelled in onBeforeUnmount
+let extJwtHandler = null;
+let extJwtTimeout = null;
+
+function setupIrcListeners() {
+    const channelMatches = (event) => event.channel.toLowerCase() === buffer.value.name.toLowerCase();
+    const isOwnNick = (nick) => nick.toLowerCase() === network.value.nick.toLowerCase();
+    const networkMatches = (net) => net === network.value;
+
+    ircPartHandler = (event, net) => {
+        if (!networkMatches(net) || buffer.value.isQuery()) {
             return;
         }
-
-        this.loadingAnimationStart();
-
-        if (config.setting('showLink')) {
-            this.getLink();
+        if (channelMatches(event) && isOwnNick(event.nick)) {
+            kiwi.emit('mediaviewer.hide');
         }
+    };
 
-        if (config.setting('secure')) {
-            kiwi.once('irc.raw.EXTJWT', (command, message) => {
-                this.token = message.params[1];
-                this.scriptLoad();
-            });
-            this.network.ircClient.raw('EXTJWT', this.roomName);
-        } else {
-            this.scriptLoad();
+    ircQuitHandler = (event, net) => {
+        if (!networkMatches(net)) {
+            return;
         }
-
-        // MediaViewer also sets a height on mounted()
-        // and is called after this mounted()
-        this.$nextTick(() => {
-            this.$parent.setHeight(config.setting('viewHeight'));
-        });
-    },
-    beforeDestroy() {
-        this.componentProps.pluginState.isActive = false;
-        let mediaviewer = this.$el.parentElement;
-        if (mediaviewer) {
-            mediaviewer.style.height = '';
+        if (isOwnNick(event.nick)) {
+            kiwi.emit('mediaviewer.hide');
         }
+    };
 
-        if (this.api) {
-            this.api.dispose();
+    ircKickHandler = (event, net) => {
+        if (!networkMatches(net) || buffer.value.isQuery()) {
+            return;
         }
-    },
-    methods: {
-        scriptLoad() {
-            let that = this;
-            let scr = document.createElement('script');
-            scr.src = 'https://' + config.setting('server') + '/external_api.js';
-            scr.onload = () => {
-                that.scriptLoaded();
-            };
-            scr.defer = true;
-            this.$el.appendChild(scr);
-        },
-        scriptLoaded() {
-            let configOverwrite = config.setting('configOverwrite');
-            configOverwrite.prejoinPageEnabled = false;
-            configOverwrite.prejoinConfig = {
-                enabled: false,
-            };
+        if (channelMatches(event) && isOwnNick(event.kicked)) {
+            kiwi.emit('mediaviewer.hide');
+        }
+    };
 
-            let user = this.network.currentUser();
-            let domain = config.setting('server');
-            let options = {
-                roomName: this.encodedRoomName,
-                parentNode: this.$el,
-                configOverwrite: configOverwrite,
-                interfaceConfigOverwrite: config.setting('interfaceConfigOverwrite'),
-                onload: () => {
-                    this.api.executeCommand('displayName', this.network.nick);
-                    this.api.executeCommand('subject', ' ');
-                    if (user.avatar && (user.avatar.large || user.avatar.small)) {
-                        this.api.executeCommand('avatarUrl', user.avatar.large || user.avatar.small);
-                    }
-                    this.api.once('videoConferenceJoined', () => {
-                        this.loadingAnimationStop();
-                        this.isJoined = true;
-                        if (!config.setting('showLink') || this.link) {
-                            // if showLink is disabled or the link is ready send our join message,
-                            // if the link is not ready the message will be send when it is
-                            this.sendJoinMessage();
-                        }
-                    });
-                    this.api.once('videoConferenceLeft', () => {
-                        kiwi.emit('mediaviewer.hide');
-                    });
-                },
-            };
+    kiwi.on('irc.part', ircPartHandler);
+    kiwi.on('irc.quit', ircQuitHandler);
+    kiwi.on('irc.kick', ircKickHandler);
+}
 
-            if (config.setting('secure')) {
-                options.jwt = this.token;
-                options.noSsl = false;
-            }
+function removeIrcListeners() {
+    kiwi.off('irc.part', ircPartHandler);
+    kiwi.off('irc.quit', ircQuitHandler);
+    kiwi.off('irc.kick', ircKickHandler);
+}
 
-            this.api = new window.JitsiMeetExternalAPI(domain, options);
-        },
-        sendJoinMessage() {
-            let msgText = this.buffer.isQuery() ?
-                config.setting('inviteText') :
-                config.setting('joinText');
+function cancelFetchToken() {
+    if (extJwtTimeout) {
+        clearTimeout(extJwtTimeout);
+        extJwtTimeout = null;
+    }
+    if (extJwtHandler) {
+        kiwi.off('irc.raw.EXTJWT', extJwtHandler);
+        extJwtHandler = null;
+    }
+}
 
-            msgText = '* ' + msgText.replace('{{ nick }}', this.network.nick);
+function fetchToken() {
+    return new Promise((resolve, reject) => {
+        let t = '';
 
-            if (config.setting('showLink') && this.link) {
-                msgText += ' ' + this.link;
-            }
-
-            let message = new this.network.ircClient.Message('PRIVMSG', this.buffer.name, msgText);
-            message.prefix = this.network.nick;
-            message.tags['+kiwiirc.com/conference'] = config.getSetting('tagID');
-            this.network.ircClient.raw(message);
-        },
-        loadingAnimationStart() {
-            if (this.loadingAnimation) {
-                return;
-            }
-            this.loadingAnimation = document.createElement('div');
-            this.loadingAnimation.style.position = 'absolute';
-            this.loadingAnimation.style.top = '34%';
-            this.loadingAnimation.style.marginLeft = '45%';
-            this.loadingAnimation.innerHTML = '<i class="fa fa-spin fa-spinner" aria-hidden="true" style="font-size: 100px;"/>';
-            this.$el.appendChild(this.loadingAnimation);
-        },
-        loadingAnimationStop() {
-            this.$el.removeChild(this.loadingAnimation);
-            this.loadingAnimation = null;
-        },
-        getLink() {
-            let link = 'https://' + config.setting('server') + '/' + this.encodedRoomName;
-            if (!config.setting('useLinkShortener')) {
-                this.link = link;
-                return;
-            }
-
-            let shortURL = config.setting('linkShortenerURL');
-            if (shortURL.indexOf('api-ssl.bitly.com') > -1) {
-                this.getBitlyLink(shortURL, link);
+        extJwtHandler = (command, message) => {
+            if (message.params[2] === '*') {
+                t = message.params[3];
             } else {
-                this.getShortLink(shortURL, link);
+                t += message.params[2];
+                cancelFetchToken();
+                resolve(t);
             }
+        };
+
+        extJwtTimeout = setTimeout(() => {
+            cancelFetchToken();
+            reject(new Error('EXTJWT timeout'));
+        }, 10000);
+
+        kiwi.on('irc.raw.EXTJWT', extJwtHandler);
+        network.value.ircClient.raw('EXTJWT', buffer.value.isQuery() ? '*' : roomName.value);
+    });
+}
+
+function addLocalMessage(text) {
+    kiwi.state.addMessage(buffer.value, {
+        time: Date.now(),
+        nick: '',
+        message: text,
+        type: 'error',
+    });
+}
+
+function sendJoinMessage() {
+    const nick = network.value.nick;
+    let msgText = '* ' + (buffer.value.isQuery() ? t('inviteText', { nick }) : t('joinText', { nick }));
+
+    if (config.setting('showLink') && link.value) {
+        msgText += ' ' + link.value;
+    }
+
+    const message = new network.value.ircClient.Message('PRIVMSG', buffer.value.name, msgText);
+    message.prefix = network.value.nick;
+    message.tags['+kiwiirc.com/conference'] = config.getSetting('tagID');
+    network.value.ircClient.raw(message);
+}
+
+function onLinkResolved(resolvedLink) {
+    link.value = resolvedLink;
+    if (isJoined.value) {
+        sendJoinMessage();
+    }
+}
+
+function getShortLink(shortURL, l) {
+    fetch(shortURL.replace('{{ link }}', l), { signal: abortController.signal })
+        .then((r) => r.text())
+        .then((result) => {
+            const urlRegex = kiwi.require('helpers/TextFormatting').urlRegex;
+            const isUrl = new RegExp('^' + urlRegex.source + '$');
+            onLinkResolved(isUrl.test(result) ? result : l);
+        })
+        .catch((err) => {
+            if (err.name === 'AbortError') return;
+            onLinkResolved(l);
+        });
+}
+
+function getBitlyLink(bitlyURL, l) {
+    const apiKey = config.setting('linkShortenerAPIToken');
+    const requestURL = bitlyURL + '?access_token=' + apiKey + '&longUrl=' + l;
+    fetch(requestURL, { signal: abortController.signal })
+        .then((r) => r.json())
+        .then((result) => onLinkResolved(result.url))
+        .catch((err) => {
+            if (err.name === 'AbortError') return;
+            onLinkResolved(l);
+        });
+}
+
+function getLink() {
+    const l = 'https://' + config.setting('server') + '/' + encodedRoomName.value;
+    if (!config.setting('useLinkShortener')) {
+        link.value = l;
+        return;
+    }
+
+    const shortURL = config.setting('linkShortenerURL');
+    if (shortURL.indexOf('api-ssl.bitly.com') > -1) {
+        getBitlyLink(shortURL, l);
+    } else {
+        getShortLink(shortURL, l);
+    }
+}
+
+function scriptLoaded() {
+    const configOverwrite = {};
+    Object.assign(configOverwrite, config.setting('configOverwrite'), {
+        hideConferenceSubject: true,
+        prejoinPageEnabled: false,
+        prejoinConfig: {
+            enabled: false,
         },
-        getShortLink(shortURL, link) {
-            let requestURL = shortURL.replace('{{ link }}', link);
-            let noCorsURL = 'https://cors-anywhere.herokuapp.com/';
-            fetch(noCorsURL + requestURL).then((r) => r.text()).then((result) => {
-                let urlRegex = kiwi.require('helpers/TextFormatting').urlRegex;
-                let isUrl = new RegExp('^' + urlRegex.source + '$');
-                // catch any issues by making sure the result is a url
-                if (isUrl.test(result)) {
-                    this.link = result;
-                }
-                if (this.isJoined) {
-                    this.sendJoinMessage();
+        gravatar: {
+            disabled: true,
+        },
+        p2p: {
+            enabled: false,
+        },
+    });
+
+    if (config.setting('showLink') && !link.value) {
+        getLink();
+    }
+
+    const user = network.value.currentUser();
+    const domain = config.setting('server');
+    const options = {
+        roomName: encodedRoomName.value,
+        userInfo: {
+            displayName: network.value.nick,
+            ...buffer.value.isQuery() && { email: buffer.value.name },
+            ...user.avatar && (user.avatar.large || user.avatar.small) && {
+                avatarURL: user.avatar.large || user.avatar.small,
+            },
+        },
+        parentNode: el.value,
+        configOverwrite,
+        interfaceConfigOverwrite: config.setting('interfaceConfigOverwrite'),
+        onload: () => {
+            api.value.addEventListener('videoConferenceJoined', () => {
+                isJoined.value = true;
+                isLoading.value = false;
+
+                if (!config.setting('showLink') || link.value) {
+                    sendJoinMessage();
                 }
             });
-        },
-        getBitlyLink(bitlyURL, link) {
-            let apiKey = config.setting('linkShortenerAPIToken');
-            let requestURL = bitlyURL + '?access_token=' + apiKey + '&longUrl=' + link;
-            fetch(requestURL).then((r) => r.json()).then((result) => {
-                this.link = result.url;
-                if (this.isJoined) {
-                    this.sendJoinMessage();
+
+            api.value.addEventListener('videoConferenceLeft', () => {
+                kiwi.emit('mediaviewer.hide');
+            });
+
+            api.value.once('browserSupport', (event) => {
+                if (!event.supported) {
+                    isLoading.value = false;
+                    notSupported.value = true;
                 }
             });
+
+            api.value.addEventListener('errorOccurred', async (event) => {
+                if (event?.error?.message === 'Token expired') {
+                    api.value.dispose();
+                    api.value = null;
+                    try {
+                        token.value = await fetchToken();
+                        scriptLoaded();
+                    } catch (e) {
+                        addLocalMessage(t('conferenceFailedReauth'));
+                        kiwi.emit('mediaviewer.hide');
+                    }
+                    return;
+                }
+
+                const errMsg = event?.error?.message || 'unknown error occurred';
+                addLocalMessage(t('conferenceError', { error: errMsg }));
+                kiwi.emit('mediaviewer.hide');
+            });
         },
-    },
-};
+    };
+
+    if (config.setting('secure')) {
+        options.jwt = token.value;
+    }
+
+    api.value = new window.JitsiMeetExternalAPI(domain, options);
+}
+
+function scriptLoad() {
+    const roomNamePromise = utils.encodeRoomName(network.value.connection.server + '/' + roomName.value);
+    scr = document.createElement('script');
+    scr.src = 'https://' + config.setting('server') + '/external_api.js';
+    scr.onload = async () => {
+        if (unmounted) return;
+        const name = await roomNamePromise;
+        if (unmounted) return;
+        encodedRoomName.value = buffer.value.isQuery() ? 'q-' + name : name;
+        scriptLoaded();
+    };
+    scr.defer = true;
+    el.value.appendChild(scr);
+}
+
+onMounted(async () => {
+    setupIrcListeners();
+    abortController = new AbortController();
+    isLoading.value = true;
+
+    if (config.setting('secure')) {
+        try {
+            token.value = await fetchToken();
+        } catch (e) {
+            addLocalMessage(t('conferenceFailedToken'));
+            isLoading.value = false;
+            return;
+        }
+    }
+
+    scriptLoad();
+
+    nextTick(() => emit('setHeight', config.setting('viewHeight')));
+});
+
+onBeforeUnmount(() => {
+    unmounted = true;
+    props.componentProps.pluginState.isActive = false;
+    removeIrcListeners();
+    cancelFetchToken();
+
+    if (scr) {
+        scr.onload = null;
+    }
+
+    if (abortController) {
+        abortController.abort();
+    }
+
+    emit('setHeight', null);
+
+    if (api.value) {
+        api.value.dispose();
+    }
+});
 </script>
 
-<style>
-.plugin-conference-jitsi {
+<style lang="scss">
+.p-conference-jitsi {
     height: 100%;
 
     /* fixes firefox showing scrollbar */
     overflow: hidden;
 }
 
-.plugin-conference-overlay {
-    background-color: rgba(0, 0, 0, 0.2);
-    color: #fff;
-    padding: 8px;
+.p-conference-overlay {
     position: absolute;
     top: 0;
+    left: 0;
     z-index: 10;
+    padding: 6px 6px 2px 6px;
+    color: #fff;
+    background-color: rgb(0, 0, 0, 0.2);
 }
 
-.plugin-conference-notsupported {
-    background-color: var(--brand-error);
-    border-radius: 5px;
-    color: var(--brand-default-fg);
+.p-conference-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: rgb(0, 0, 0, 0.6);
+
+    > svg {
+        width: min(max(20vb, 80px), 200px);
+        height: min(max(20vb, 80px), 200px);
+        fill: #fff;
+    }
+
+    > i {
+        font-size: 100px;
+    }
+}
+
+.p-conference-notsupported {
     display: inline-block;
+    padding: 25px;
+    margin: 25px auto;
     font-size: 130%;
     font-weight: 600;
-    margin: 25px auto;
-    padding: 25px;
+    color: var(--brand-default-fg);
+    background-color: var(--brand-error);
+    border-radius: 5px;
 }
 </style>

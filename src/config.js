@@ -1,10 +1,10 @@
 /* global kiwi:true */
 
-let configBase = 'conference';
-let defaultConfig = {
+export const configBase = 'plugin-conference';
+const defaultConfig = {
     tagID: 1,
     secure: false,
-    server: 'meet.jit.si',
+    server: '',
     queries: true,
     channels: true,
     buttonIcon: 'fa-phone',
@@ -12,10 +12,6 @@ let defaultConfig = {
     enabledInChannels: ['*'],
     groupInvitesTTL: 30000,
     maxParticipantsLength: 60,
-    participantsMore: 'more...',
-    inviteText: '{{ nick }} is inviting you to a private call.',
-    joinText: '{{ nick }} has joined the conference.',
-    joinButtonText: 'Join now!',
     showLink: false,
     useLinkShortener: false,
     linkShortenerURL: 'https://x0.no/api/?{{ link }}',
@@ -24,18 +20,56 @@ let defaultConfig = {
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
         TOOLBAR_BUTTONS: [
-            'microphone', 'camera', 'fullscreen', 'hangup',
-            'settings', 'videoquality', 'filmstrip', 'fodeviceselection',
-            'stats', 'shortcuts',
+            'camera',
+            // 'chat',
+            'closedcaptions',
+            'desktop',
+            // 'download',
+            // 'embedmeeting',
+            'etherpad',
+            // 'feedback',
+            'filmstrip',
+            'fullscreen',
+            'hangup',
+            'help',
+            'highlight',
+            // 'invite',
+            // 'linktosalesforce',
+            'livestreaming',
+            'microphone',
+            'noisesuppression',
+            // 'participants-pane',
+            // 'profile',
+            'raisehand',
+            // 'recording',
+            // 'security',
+            'select-background',
+            'settings',
+            // 'shareaudio',
+            // 'sharedvideo',
+            'shortcuts',
+            'stats',
+            'tileview',
+            'toggle-camera',
+            // 'videoquality',
+            // 'whiteboard',
         ],
     },
     configOverwrite: {
         startWithVideoMuted: true,
         startWithAudioMuted: true,
+        disableTileView: true,
+        disableTileEnlargement: true,
     },
 };
 
 export function setDefaults() {
+    const oldConfig = kiwi.state.getSetting('settings.conference');
+    if (oldConfig) {
+        // eslint-disable-next-line no-console, vue/max-len
+        console.warn('[DEPRECATION] Please update your conference plugin config to use "plugin-conference" as its object key');
+        kiwi.setConfigDefaults(configBase, oldConfig);
+    }
     kiwi.setConfigDefaults(configBase, defaultConfig);
 }
 
@@ -55,7 +89,7 @@ export function isAllowedBuffer(buffer) {
     if (buffer.isQuery()) {
         return true;
     }
-    let enabledChannels = getSetting('enabledInChannels');
+    const enabledChannels = getSetting('enabledInChannels');
     if (enabledChannels.indexOf('*') > -1) {
         return true;
     }

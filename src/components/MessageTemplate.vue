@@ -3,71 +3,71 @@
         <div class="plugin-conference-jointext">
             {{ buffer.isQuery() ? inviteText : joinText }}
         </div>
-        <div v-if="!pluginState.isActive && (buffer.isQuery() || buffer.joined)" class="u-button u-button-primary" @click="openJitsi()">
+        <div v-if="!pluginState.isActive" class="u-button u-button-primary" role="button" @click="openJitsi()">
             <i aria-hidden="true" class="fa fa-phone" />
             <span class="plugin-conference-joinbutton">{{ joinButtonText }}</span>
         </div>
     </div>
 </template>
 
-<script>
-
+<script setup>
 /* global kiwi:true */
-import JitsiMediaView from './JitsiMediaView.vue';
-import * as config from '../config.js';
+import { computed } from 'vue';
 
-export default {
-    props: ['buffer', 'message', 'idx', 'ml', 'pluginState', 'inviteState'],
-    computed: {
-        nicks() {
-            let maxLength = config.setting('maxParticipantsLength');
-            let showNicks = [];
-            let length = 0;
-            for (let i = 0; i < this.inviteState.members.length; i++) {
-                let nick = this.inviteState.members[i];
-                length += nick.length;
-                if (length > maxLength) {
-                    showNicks.push(config.setting('participantsMore'));
-                    break;
-                }
-                showNicks.push(nick);
-            }
-            return showNicks;
+import JitsiMediaView from '@/components/JitsiMediaView.vue';
+import * as config from '@/config.js';
+import { t } from '@/translations.js';
+
+const props = defineProps({
+    buffer: { type: Object, required: true },
+    message: { type: Object, required: true },
+    idx: { type: Number, required: true },
+    ml: { type: Object, required: true },
+    pluginState: { type: Object, required: true },
+    inviteState: { type: Object, required: true },
+});
+
+const nicks = computed(() => {
+    const maxLength = config.setting('maxParticipantsLength');
+    const showNicks = [];
+    let length = 0;
+    for (let i = 0; i < props.inviteState.members.length; i++) {
+        const nick = props.inviteState.members[i];
+        length += nick.length;
+        if (length > maxLength) {
+            showNicks.push(t('participantsMore'));
+            break;
+        }
+        showNicks.push(nick);
+    }
+    return showNicks;
+});
+
+const joinButtonText = computed(() => t('joinNow'));
+const inviteText = computed(() => t('inviteText', { nick: nicks.value.join(', ') }));
+const joinText = computed(() => t('joinText', { nick: nicks.value.join(', ') }));
+
+function openJitsi() {
+    props.pluginState.isActive = true;
+    kiwi.emit('mediaviewer.show', {
+        component: JitsiMediaView,
+        componentProps: {
+            pluginState: props.pluginState,
+            buffer: props.buffer,
         },
-        joinButtonText() {
-            return config.setting('joinButtonText');
-        },
-        inviteText() {
-            return config.setting('inviteText').replace('{{ nick }}', this.nicks.join(', '));
-        },
-        joinText() {
-            return config.setting('joinText').replace('{{ nick }}', this.nicks.join(', '));
-        },
-    },
-    methods: {
-        openJitsi() {
-            this.pluginState.isActive = true;
-            kiwi.emit('mediaviewer.show', {
-                component: JitsiMediaView,
-                componentProps: {
-                    pluginState: this.pluginState,
-                    buffer: this.buffer,
-                },
-            });
-        },
-    },
-};
+    });
+}
 </script>
 
 <style>
 .plugin-conference-join {
-    background: var(--brand-midtone);
     box-sizing: border-box;
+    width: 100%;
+    padding: 20px;
     font-size: 1.05em;
     line-height: 1.05em;
-    padding: 20px;
     text-align: center;
-    width: 100%;
+    background: var(--brand-midtone);
 }
 
 .plugin-conference-jointext {
